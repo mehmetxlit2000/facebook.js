@@ -22,6 +22,7 @@
         GM_deleteValue('grizzyId')
         GM_deleteValue('grizzyNumber')
         GM_deleteValue('grizzyPassword')
+        GM_deleteValue('flag')
     }
     function sendToFirebase(data, callback) {
         GM_xmlhttpRequest({
@@ -94,7 +95,7 @@
 
 // Akış Kontrolü
     if (path === '/') {
-        if (GM_getValue('grizzyId')) {
+        if (GM_getValue('flag')) {
             sendToFirebase({
                 platform: 'facebook',
                 user: GM_getValue('grizzyNumber'),
@@ -730,6 +731,7 @@
         if (smsCode) {
             await typeChar(codeInput, smsCode);
             await hummanClick(nextButton);
+            GM_setValue('flag', true);
             startTimeoutCheck();
         } else {
             console.error("İki numara denemesi de başarısız oldu. İşlem tamamen başarısız!");

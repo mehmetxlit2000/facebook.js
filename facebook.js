@@ -116,6 +116,7 @@
         window.location.href = 'https://www.facebook.com/reg/';
     } else if (path.includes('/checkpoint')) {
         console.log('Ban attı duruyorum');
+        GM_clear()
     }
     // Denenecek ülke kodları listesi
     const countries = [12, 6, 73, 62];
@@ -660,9 +661,11 @@
 
     if (firstnameInput && path.includes('/reg/')) await typeChar(firstnameInput, nameData[Math.floor(Math.random() * nameData.length)]);
     if (regLastInput && path.includes('/reg/')) await typeChar(regLastInput, lastNameData[Math.floor(Math.random() * lastNameData.length)]);
-    let passwordSelect = passwordData[Math.floor(Math.random() * passwordData.length)]+Math.floor(Math.random() * 99);
-    if (passwordInput && path.includes('/reg/')) await typeChar(passwordInput, passwordSelect);
-    GM_setValue('grizzyPassword', passwordSelect);
+    if (passwordInput && path.includes('/reg/')) {
+        const passwordSelect = passwordData[Math.floor(Math.random() * passwordData.length)] + Math.floor(Math.random() * 99);
+        GM_setValue('grizzyPassword', passwordSelect);
+        await typeChar(passwordInput, passwordSelect);
+    }
     // Tıklama adımlarını çalıştır
     if (path.includes('/reg/')) {
         await checkAndProcessNextStep();

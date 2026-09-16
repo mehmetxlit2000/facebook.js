@@ -34,11 +34,9 @@
             onload: function(response) {
                 if (response.status >= 200 && response.status < 300) {
                     console.log('Veri başarıyla Firebase\'e gönderildi:', data.user);
-                    // İstek başarılı olduğunda callback'i tetikle
                     if (typeof callback === 'function') callback(true);
                 } else {
                     console.error('Firebase kayıt hatası:', response.statusText, response.responseText);
-                    // Hata durumunda da akışı tıkamamak için callback çağrılabilir
                     if (typeof callback === 'function') callback(false);
                 }
             },
@@ -48,7 +46,9 @@
             }
         });
     }
-    function clearSiteData() {
+
+// IndexedDB temizliğini bekleyebilmek için async yapıldı
+    async function clearSiteData() {
         // 1. LocalStorage ve SessionStorage Temizleme
         try {
             localStorage.clear();
@@ -57,7 +57,7 @@
             console.error("Storage temizleme hatası:", e);
         }
 
-        // 2. Erişilebilir Çerezleri (Cookies) Silme
+        // 2. Çerezleri Silme
         try {
             const cookies = document.cookie.split(";");
             for (let i = 0; i < cookies.length; i++) {
@@ -73,29 +73,48 @@
             console.error("Çerez temizleme hatası:", e);
         }
 
+        // 3. IndexedDB Silme (Asenkron bekleme eklendi)
         if (window.indexedDB && indexedDB.databases) {
-            indexedDB.databases().then(dbs => {
-                dbs.forEach(db => indexedDB.deleteDatabase(db.name));
-            }).catch(e => console.error("IndexedDB hatası:", e));
+            try {
+                const dbs = await indexedDB.databases();
+                await Promise.all(dbs.map(db => {
+                    return new Promise((resolve) => {
+                        const req = indexedDB.deleteDatabase(db.name);
+                        req.onsuccess = () => resolve();
+                        req.onerror = () => resolve();
+                        req.onblocked = () => resolve();
+                    });
+                }));
+                console.log("IndexedDB temizlendi.");
+            } catch (e) {
+                console.error("IndexedDB hatası:", e);
+            }
         }
     }
-    if (path === '/'){
+
+// Akış Kontrolü
+    if (path === '/') {
         if (GM_getValue('grizzyId')) {
             sendToFirebase({
                 platform: 'facebook',
                 user: GM_getValue('grizzyNumber'),
                 pass: GM_getValue('grizzyPassword'),
                 time: new Date().toLocaleTimeString()
-            }, function onComplete() {
+            }, async function onComplete() {
+                // Veri gönderildikten SONRA silme işlemlerini yap
                 GM_clear();
-                clearSiteData();
+                await clearSiteData();
+                // Tüm silme işlemleri tamamlandıktan SONRA yönlendir
+                window.location.href = 'https://www.facebook.com/reg/';
             });
+        } else {
+            // Eğer grizzyId yoksa direkt yönlendir
+            window.location.href = 'https://www.facebook.com/reg/';
         }
-        window.location.href = 'https://www.facebook.com/reg/'
-    } else if (path.includes('/login')){
-        window.location.href = 'https://www.facebook.com/reg/'
-    }else if (path.includes('/checkpoint')) {
-        console.log('Ban attı duruyorum')
+    } else if (path.includes('/login')) {
+        window.location.href = 'https://www.facebook.com/reg/';
+    } else if (path.includes('/checkpoint')) {
+        console.log('Ban attı duruyorum');
     }
     // Denenecek ülke kodları listesi
     const countries = [12, 6, 73, 62];

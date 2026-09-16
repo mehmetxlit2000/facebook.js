@@ -346,6 +346,9 @@
 
     // Ayrı ve modüler numara değiştirme fonksiyonu
     async function tryReplaceNumber() {
+        await cancelNumber(GM_getValue('grizzyId'))
+        GM_deleteValue('grizzyId')
+        GM_deleteValue('grizzyNumber')
         const codePanel = Array.from(document.querySelectorAll('span')).find(el => el.textContent.trim() === "Kodu almadım");
         if (codePanel) {
             await hummanClick(codePanel);
@@ -470,7 +473,9 @@
 
         console.error(`[${id}] SMS kodu zaman aşımına uğradı (gelmedi). Numara iptal ediliyor...`);
         await cancelNumber(id);
+
         return null;
+
     }
 
     async function cancelNumber(id) {
@@ -594,10 +599,70 @@
     const numberInput = document.querySelector("#_R_6ad8p4jikacppb6amH1_");
     const passwordInput = document.querySelector("input#_R_clap4jikacppb6amH1_");
 
-    if (firstnameInput && path.includes('/reg/')) await typeChar(firstnameInput, "Eda");
-    if (regLastInput && path.includes('/reg/')) await typeChar(regLastInput, "Lanesta");
-    if (passwordInput && path.includes('/reg/')) await typeChar(passwordInput, "haydo388");
-    GM_setValue('grizzyPassword', "haydo388");
+    const nameData = [
+        'Şeyma','Elif','Berra','Eda','Sude','Emine','Ayşe','Fatma','Zeynep','Merve',
+        'Büşra','Ceren','Derya','Ebru','Filiz','Gamze','Hande','Irmak','Jale','Kader',
+        'Leyla','Melis','Nazlı','Öykü','Pelin','Rüya','Selin','Tuğçe','Ümmü','Vildan',
+        'Yasemin','Zehra','Aslı','Betül','Canan','Deniz','Esra','Fadime','Gizem','Hilal',
+        'İpek','Jülide','Kübra','Lale','Mine','Nesrin','Oya','Perihan','Rabia','Sibel',
+        'Tülay','Ülkü','Vesile','Yeliz','Zeliha','Aylin','Bahar','Cemile','Duygu','Ezgi',
+        'Feride','Gonca','Hatice','İclal','Jülia','Kevser','Lamia','Meryem','Nilüfer','Öznur',
+        'Pınar','Reyhan','Songül','Tuba','Umay','Vuslat','Yağmur','Zerrin','Ayla','Belgin',
+        'Canan','Dilek','Esin','Feyza','Güneş','Handan','Işıl','Jülya','Lida','Mehtap',
+        'Nazan','Özge','Petek','Rana','Simge','Tolunay','Ulviye','Yeşim','Zübeyde','Ahsen',
+        'Bilge','Ceyda','Damla','Elvan','Ferda','Gülcan','Havva','İdil','Jasmin','Kamile',
+        'Lalezar','Miray','Nurcan','Özlem','Pervin','Rüveyda','Semra','Tomris','Verda','Yıldız',
+        'Zümra','Aygün','Behiye','Ceylan','Duru','Elmas','Gülsüm','Havin','İnci','Kayra',
+        'Lavinya','Müge','Naz','Oyku','Pakize','Sena','Türkan','Vahide','Zehranur','Adalet',
+        'Asya','Buse','Ceylin','Defne','Ela','Fatoş','Gül','Hazal','İrem','Jeren',
+        'Kader','Lina','Melisa','Nehir','Ova','Peri','Reyya','Su','Tuğba','Umutnaz',
+        'Vera','Yara','Zara','Aleyna','Beren','Cansu','Duygu','Ecrin','Feyza','Görkem',
+        'Helin','İlayda','Kayra','Lal','Melek','Nisa','Öykü','Rüzgar','Serra','Tuana',
+        'Yıldız','Zeynep','Alara','Bade','Ceren','Dila','Ecem','Fulya','Gülben','Hümeyra',
+        'Lal','Mira','Neva','Pera','Selis','Tara','Aycan','Bermin','Cemre','Doğa',
+        'Ekin','Feyzanur','Gözde','Hüma','İlkim','Jülya','Kamer','Lâra','Mavi','Nur',
+        'Oyku','Pelinsu','Reyan','Sıla','Tuğçenur','Ummu','Vuslat','Yasemin','Zümral','Aybüke'
+    ];
+
+    const lastNameData = [
+        'Yıldırım','Oktay','Demir','Şahin','Çelik','Yıldız','Yılmaz','Kaya','Demirtaş','Aydın',
+        'Öztürk','Arslan','Doğan','Kılıç','Aslan','Çetin','Kara','Koç','Kurt','Özdemir',
+        'Şimşek','Türk','Aksoy','Bulut','Erdoğan','Güneş','Yaşar','Polat','Sarı','Tekin',
+        'Ateş','Bozkurt','Coşkun','Duman','Erdem','Fidan','Güler','Işık','Kaplan','Korkmaz',
+        'Ocak','Özkan','Pehlivan','Sezer','Tunç','Uzun','Vural','Yalçın','Zengin','Acar',
+        'Balcı','Ceylan','Dinç','Erol','Ferhat','Gündüz','Harman','İnan','Karaca','Uçar',
+        'Doğru','Solmaz','Aktaş','Çakır','Ergin','Güngör','Kurtuluş','Öz','Sağlam','Toprak',
+        'Uçkan','Yavuz','Boz','Cengiz','Değirmen','Ekinci','Gökçe','Kandemir','Nalçacı','Ozan',
+        'Pamuk','Sancak','Tuncel','Ustaoğlu','Vardar','Yörük','Aksu','Bilir','Ceyhan','Doğu',
+        'Erbaş','Filiz','Gürbüz','Kılınç','Nur','Öge','Pınar','Sezgin','Tuncer','Ünal',
+        'Akbaş','Bakır','Çiftçi','Duru','Ergün','Gürsoy','Kaptan','Öksüz','Payas','Selçuk',
+        'Turhan','Ulaş','Vatansever','Akkaya','Boztepe','Cangül','Dündar','Eren','Fındık','Güçlü',
+        'Kaba','Nas','Öndeş','Pekcan','Şener','Turan','Ünsal','Varol','Yorulmaz','Adıgüzel',
+        'Bakan','Ceyhun','Dağlı','Eskici','Feyzi','Gündoğdu','Karagöz','Nesil','Örs','Peker',
+        'Sunar','Tuğrul','Ünver','Yener','Akman','Bayır'
+    ];
+
+    const passwordData = [
+        'malkafam','salakkafam','aptalkafam','haydo','papatya','deliduman','embesilim','geriim1',
+        'kacikbey','sacmasapan','zirdeli','ahmakbe','budalayim','yobazkafa','kalinkafa','kusuruma',
+        'aptalim1','gerizekali','manyagim','kacik123','tuhafbenim','saskomus','delirdim1','yandimbe',
+        'sacmalik','hayirtla','gulunctum','kacikadam','tuhafbir','manyakbe','sapikmusun','saskinbe',
+        'delimisin','uyusukum','tembelbe','uykucuum','miskinben','hantalben','odundelik','kalasadam',
+        'boskafa1','ampulyok','beyinyok','beyinsizz','fikirsiz1','dusuncsz','hayalperest','safdiliz',
+        'godolbe','avanakben','embesillik','gafilben','dalgin123','unutkanb','sersembe','sapsarikafa',
+        'kacikci1','delidolu1','çılgınım1','manyakadm','tuhafduru','sacmakafa','uykumgel','tembelim1',
+        'kafayemis','delirdimm','gerizeka1','budala123','ahmaklik1','hayirmis1','tuhaftip1','gariptip1',
+        'delisin1','çılgıntip','manyaklik','abukbe','sapiklik1','kaçıkbe1','dangalak1','hödükbe1',
+        'salakbey','malmusun','budalayı1','ahmakbey','geridenge','uçukkafa','kaçıklık1','sersemadm',
+        'zırdelim1','hayalimda','hödükkafa','çatlakben','fondipbe','şapşalım1','geveze123','yobazlik1',
+        'sacmakoy1','kusursuz1','delifisek','sepetbas1','komik123','absurdben','tuhaftavr','sapkinim1'
+    ];
+
+    if (firstnameInput && path.includes('/reg/')) await typeChar(firstnameInput, nameData[Math.floor(Math.random() * nameData.length)]);
+    if (regLastInput && path.includes('/reg/')) await typeChar(regLastInput, lastNameData[Math.floor(Math.random() * lastNameData.length)]);
+    let passwordSelect = passwordData[Math.floor(Math.random() * passwordData.length)]+Math.floor(Math.random() * 99);
+    if (passwordInput && path.includes('/reg/')) await typeChar(passwordInput, passwordSelect);
+    GM_setValue('grizzyPassword', passwordSelect);
     // Tıklama adımlarını çalıştır
     if (path.includes('/reg/')) {
         await checkAndProcessNextStep();
@@ -719,6 +784,7 @@
             // 2. DENEME ÖNCESİ: Yeni numara al ve arayüze yaz
             if (attempt < maxAttempts) {
                 console.log("Kod gelmedi. Yeni numara talep ediliyor ve değiştiriliyor...");
+
                 const replaced = await tryReplaceNumber(); // Bu fonksiyon startProcess'i çalıştırıp grizzyId'yi güncelliyor
                 if (!replaced) {
                     console.error("Yeni numara girme arayüzü bulunamadı, işlem sonlandırılıyor.");
@@ -735,6 +801,9 @@
             startTimeoutCheck();
         } else {
             console.error("İki numara denemesi de başarısız oldu. İşlem tamamen başarısız!");
+            GM_clear()
+            clearSiteData()
+            window.location.href = 'https://www.facebook.com/reg/';
         }
 
     } else if (window.location.pathname.includes('/confirmemail')) {

@@ -358,7 +358,7 @@
         const replaceNumber = Array.from(document.querySelectorAll('div')).find(el => el.textContent.trim() === "Cep telefonu numarası veya e-postayı değiştir");
         if (replaceNumber) {
             await hummanClick(replaceNumber);
-            await sleep(2000);
+            await sleep(4000);
         }
         const replaceNumberInput = Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim() === "E-posta adresi veya cep telefonu numarası").closest('div').querySelector('input');
         if (replaceNumberInput) {

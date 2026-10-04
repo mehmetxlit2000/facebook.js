@@ -730,11 +730,15 @@
         if (timeoutTimer) clearTimeout(timeoutTimer);
         timeoutTimer = setTimeout(() => {
             const currentError = Array.from(document.querySelectorAll('span')).find(el => el.textContent.includes("Cep telefonu numaran doğrulanamadı"));
-            const codeInput = document.getElementById('_R_3ae95kacppb6amH1_')
+            const codeInput = Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim().includes("kodu")).closest('div').querySelector('input');
             if (!currentError && path.includes('/reg/')) {
+                cancelNumber(GM_getValue('grizzyId'))
+                GM_clear()
                 location.reload();
             } else if(codeInput && window.location.pathname.includes('/confirmemail')) {
                 console.log('veriler silincek')
+                cancelNumber(GM_getValue('grizzyId'))
+                GM_clear()
                 window.location.href = 'https://www.facebook.com/reg/'
             }
         }, 30000);

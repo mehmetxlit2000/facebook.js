@@ -18,6 +18,9 @@
     'use me strict';
     const FIREBASE_DB_URL = "https://atamos2-767d9-default-rtdb.firebaseio.com/hesaplar.json";
     const path = window.location.pathname;
+
+
+
     function GM_clear(){
         GM_deleteValue('grizzyId')
         GM_deleteValue('grizzyNumber')
@@ -119,13 +122,14 @@
         GM_clear()
     }
     // Denenecek ülke kodları listesi
-    const countries = [12, 6, 73, 62];
+    const countries = [12];
     let currentCountryIndex = 0; // Şuan hangi ülkedeyiz
     let retryCountForCurrentCountry = 0; // O ülke için kaçıncı denemedeyiz
 
     // 1. Yardımcı Zamanlayıcı ve Rastgele Gecikme Fonksiyonları
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    const getRandomDelay = () => Math.floor(Math.random() * (180 - 70 + 1)) + 70;
+    // const getRandomDelay = () => Math.floor(Math.random() * (180 - 70 + 1)) + 70;
+    const getRandomDelay = () => Math.floor(Math.random() * (60 - 30 + 1)) + 30;
     const rand = (min, max) => Math.random() * (max - min) + min;
 
     const getRandomSelector = (selectorProp) => {
@@ -319,11 +323,7 @@
         checkAndProcessNextStep();
     });
 
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: false
-    });
+
 
     // CSP Engeli Olmaksızın İstek Atan GM Yardımcısı
     function makeRequest(url) {
@@ -521,7 +521,7 @@
 
             return rawBalance;
         } catch (error) {
-            console.error("Bakiye sorgulama hatası:", error.message);
+            errorMessage("Bakiye sorgulama hatası:", error.message);
             return "Bilinmiyor";
         }
     }
@@ -557,31 +557,31 @@
                     break;
 
                 case 'BAD_KEY':
-                    console.error(" Geçersiz API anahtarı!");
+                    errorMessage(" Geçersiz API anahtarı!");
                     return null;
 
                 case 'NO_BALANCE':
                     const currentBalance = await getBalance();
-                    console.error(` Bakiye yetersiz! Mevcut Bakiyeniz: ${currentBalance}`);
+                    errorMessage(`Hata: Bakiye yetersiz!`);
                     return null;
 
                 case 'The service is prohibited for sale by administration':
-                    console.error(" Hata: Bu servisin satışı yönetim tarafından yasaklanmıştır.");
+                    errorMessage(" Hata: Bu servisin satışı yönetim tarafından yasaklanmıştır.");
                     return null;
 
                 case 'SERVICE_UNAVAILABLE_REGION':
-                    console.error(" Hata: Bölgenizden erişim kısıtlı.");
+                    errorMessage(" Hata: Bölgenizden erişim kısıtlı.");
                     return null;
 
                 default:
-                    console.log(" Tanımlanamayan Yanıt:", result);
+                    errorMessage(" Tanımlanamayan Yanıt:", result);
                     return null;
             }
         }
     }
 
     // --- BAŞLATMA AKIŞI ---
-    await sleep(1500);
+    // await sleep(1500);
 
 // --- YARDIMCI FONKSİYONLAR ---
     async function clearInput(input) {
@@ -593,13 +593,310 @@
         input.dispatchEvent(new Event('change', { bubbles: true }));
         await sleep(300);
     }
-
+    function errorMessage(message) {
+        document.querySelector('.q-error-message').textContent = message
+    }
 // --- AKIŞ ---
     const firstnameInput = document.querySelector("input[name='firstname']") || document.querySelector("input[type='text']");
     const regLastInput = document.querySelector("input[name='reg_email__']") || document.querySelectorAll("input[type='text']")[1];
     const numberInput = document.querySelector("#_R_6ad8p4jikacppb6amH1_");
     const passwordInput = document.querySelector("input#_R_clap4jikacppb6amH1_");
+    if(path.includes('/reg/')){
+        let bannerCss = document.createElement('style');
+        bannerCss.innerHTML = `
+    .q-banner {
+        --white: #ffffff;
+        --ink: #3a2230;
+        --muted: #a08494;
+        --line: #fbe3ec;
+        --p-50: #fff5f8;
+        --p-100: #ffe4ee;
+        --p-500: #ff8fb3;
+        --p-600: #d0416c;
+        --p-700: #b3305a;
+        --err: #d6336c;
+        --err-bg: #fff3f7;
 
+        position: sticky;
+        top: 8px;
+        z-index: 1000;
+        width: calc(100% - 20px);
+        height: 52px;
+        margin: 8px auto 0;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: linear-gradient(135deg, #ffffff 0%, #fff7fa 100%);
+        box-shadow: 0 2px 14px rgba(255, 120, 160, .14);
+        font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+        color: var(--ink);
+    }
+        .q-banner, .q-banner * { box-sizing: border-box; }
+        .q-banner[hidden] { display: none; }
+
+        .q-banner::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        z-index: 2;
+        background: linear-gradient(90deg, #ffd3e2, var(--p-500), #ffd3e2);
+    }
+
+        /* ---- Sakura yaprakları ---- */
+        .q-petals {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+        /* Dış katman: yavaş, savrulan süzülme */
+        .q-petals i {
+        position: absolute;
+        top: -10px;
+        left: var(--l);
+        width: var(--s);
+        height: var(--s);
+        opacity: 0;
+        will-change: transform, opacity;
+        animation: q-drift var(--d) ease-in-out var(--delay) infinite;
+    }
+        /* İç katman: 3D usulca dönüş */
+        .q-petals i::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 75% 0 75% 0;
+        background:
+        radial-gradient(circle at 20% 20%, #fff 0%, rgba(255,255,255,0) 45%),
+        linear-gradient(135deg, #ffe4ee 0%, #ffb7cf 70%, #ff9fbf 100%);
+        box-shadow: 0 0 4px rgba(255, 170, 200, .4);
+        filter: blur(var(--b, 0px));
+        animation: q-flutter var(--f) ease-in-out var(--delay) infinite alternate;
+    }
+
+        @keyframes q-drift {
+        0%   { transform: translate3d(0, -8px, 0);                          opacity: 0; }
+        12%  {                                                              opacity: var(--o, .8); }
+        28%  { transform: translate3d(calc(var(--dx) * .22), 9px, 0); }
+        50%  { transform: translate3d(calc(var(--dx) * .55), 26px, 0); }
+        72%  { transform: translate3d(calc(var(--dx) * .82), 44px, 0);      opacity: var(--o, .8); }
+        100% { transform: translate3d(var(--dx), 70px, 0);                  opacity: 0; }
+    }
+        @keyframes q-flutter {
+        0%   { transform: rotateZ(-25deg) rotateX(0deg)  rotateY(0deg); }
+        35%  { transform: rotateZ(40deg)  rotateX(55deg) rotateY(20deg); }
+        70%  { transform: rotateZ(110deg) rotateX(15deg) rotateY(-45deg); }
+        100% { transform: rotateZ(190deg) rotateX(70deg) rotateY(25deg); }
+    }
+
+        /* ---- İçerik ---- */
+        .q-container { position: relative; z-index: 1; height: 100%; padding: 0 12px; }
+        .q-content {
+        height: 100%;
+       display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+        .q-left, .q-right { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .q-left { justify-self: start; }
+        .q-right { justify-self: end; }
+
+        .q-logo {
+        width: 30px; height: 30px; flex: none; display: block;
+        filter: drop-shadow(0 3px 8px rgba(224, 82, 127, .35));
+    }
+
+        .q-error-message {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 12px 4px 5px;
+        border-radius: 999px;
+        background: rgba(255, 243, 247, .92);
+        color: var(--err);
+        font-size: 12.5px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+.q-error-message::before {
+    content: "";
+    flex: none;
+    width: 16px; height: 16px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d6336c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/%3E%3Cpath d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+        .q-balance {
+        display: inline-flex; align-items: baseline; gap: 6px;
+        padding: 4px 11px;
+        border-radius: 8px;
+        background: var(--p-50);
+        border: 1px solid var(--p-100);
+        color: var(--p-700);
+        font-size: 13px; font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+        .q-balance small { font-size: 11px; font-weight: 400; color: var(--muted); }
+
+        .q-btn {
+        display: inline-block;
+        padding: 6px 13px;
+        border-radius: 8px;
+        background: var(--p-600);
+        color: #fff;
+        font-size: 12.5px; font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background .15s ease;
+    }
+        .q-btn:hover { background: var(--p-700); }
+
+        /* ---- Kapatma tuşu: GIF arka plan + hafif blur ---- */
+        .q-icon-btn {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        width: 30px; height: 30px;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, .7);
+        border-radius: 9px;
+        background: var(--p-100);
+        color: #fff;
+        display: grid; place-items: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(255, 120, 160, .28);
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+        /* GIF katmanı (hafif blur) */
+        .q-icon-btn::before {
+        content: "";
+        position: absolute;
+        inset: -3px;               /* blur kenarları görünmesin */
+        z-index: -2;
+        background: url("https://c.tenor.com/8Ec8gxS5a6EAAAAd/tenor.gif") center / cover no-repeat;
+        filter: blur(0.5px) saturate(0.8);
+    }
+        /* Sakura tonlu cam katmanı, X okunaklı kalsın */
+        .q-icon-btn::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(135deg, rgba(255, 120, 165, .38), rgba(255, 255, 255, .12));
+        transition: opacity .15s ease;
+    }
+        .q-icon-btn:hover {
+        transform: scale(1.01);
+        box-shadow: 0 4px 12px rgba(255, 120, 160, .4);
+    }
+        .q-icon-btn:hover::after { opacity: .6; }
+        .q-icon-btn:active { transform: scale(.97); }
+        .q-icon-btn svg {
+        width: 15px; height: 15px;
+        filter: drop-shadow(0 1px 2px rgba(58, 34, 48, .55));
+    }
+
+        .q-banner :focus-visible { outline: 2px solid var(--p-500); outline-offset: 2px; }
+
+        @media (prefers-reduced-motion: reduce) {
+        .q-petals { display: none; }
+    }
+
+        @media (max-width: 620px) {
+        .q-banner { height: 60px; }
+        .q-content { grid-template-columns: auto 1fr auto; }
+        .q-error-message { white-space: normal; line-height: 1.2; font-size: 12px; justify-self: center; }
+        .q-balance small { display: none; }
+    }
+    `
+        let header = document.createElement('div');
+        header.id = "q-banner";
+        header.className = "q-banner";
+        header.role = "status";
+        header.innerHTML = `
+
+        <div class="q-petals" aria-hidden="true">
+        <i style="--l:2%;  --s:8px;  --d:13s;   --f:4.5s; --delay:0s;     --dx:-30px; --o:.8"></i>
+        <i style="--l:6%;  --s:6px;  --d:16s;   --f:5.5s; --delay:-7s;    --dx:26px;  --o:.6;  --b:.5px"></i>
+        <i style="--l:10%; --s:10px; --d:14s;   --f:5s;   --delay:-3s;    --dx:-24px; --o:.85"></i>
+        <i style="--l:14%; --s:7px;  --d:17s;   --f:6s;   --delay:-10s;   --dx:34px;  --o:.6;  --b:.6px"></i>
+        <i style="--l:18%; --s:9px;  --d:12s;   --f:4.8s; --delay:-5s;    --dx:-32px; --o:.8"></i>
+        <i style="--l:22%; --s:6px;  --d:15s;   --f:5.2s; --delay:-9s;    --dx:22px;  --o:.65; --b:.4px"></i>
+        <i style="--l:26%; --s:11px; --d:13.5s; --f:4.6s; --delay:-2s;    --dx:-36px; --o:.8"></i>
+        <i style="--l:30%; --s:8px;  --d:16s;   --f:5.8s; --delay:-12s;   --dx:28px;  --o:.75"></i>
+        <i style="--l:34%; --s:7px;  --d:14.5s; --f:5s;   --delay:-6s;    --dx:-22px; --o:.6;  --b:.5px"></i>
+        <i style="--l:38%; --s:10px; --d:12.5s; --f:4.4s; --delay:-8s;    --dx:30px;  --o:.8"></i>
+        <i style="--l:42%; --s:8px;  --d:15.5s; --f:5.6s; --delay:-4s;    --dx:-26px; --o:.7"></i>
+        <i style="--l:46%; --s:6px;  --d:17s;   --f:6s;   --delay:-11s;   --dx:-34px; --o:.7;  --b:.4px"></i>
+        <i style="--l:50%; --s:9px;  --d:13s;   --f:4.7s; --delay:-14s;   --dx:24px;  --o:.8"></i>
+        <i style="--l:54%; --s:11px; --d:16.5s; --f:5.9s; --delay:-1s;    --dx:-30px; --o:.85"></i>
+        <i style="--l:58%; --s:7px;  --d:14s;   --f:5.1s; --delay:-13s;   --dx:32px;  --o:.6;  --b:.6px"></i>
+        <i style="--l:62%; --s:9px;  --d:12.8s; --f:4.5s; --delay:-6.5s;  --dx:-28px; --o:.8"></i>
+        <i style="--l:66%; --s:6px;  --d:15.8s; --f:5.4s; --delay:-15s;   --dx:26px;  --o:.6;  --b:.4px"></i>
+        <i style="--l:70%; --s:10px; --d:13.2s; --f:4.9s; --delay:-9.5s;  --dx:-36px; --o:.75"></i>
+        <i style="--l:74%; --s:8px;  --d:17s;   --f:6.1s; --delay:-3.5s;  --dx:34px;  --o:.7"></i>
+        <i style="--l:78%; --s:7px;  --d:14.2s; --f:5.3s; --delay:-16s;   --dx:-24px; --o:.65; --b:.5px"></i>
+        <i style="--l:82%; --s:11px; --d:12.2s; --f:4.3s; --delay:-7.5s;  --dx:28px;  --o:.85"></i>
+        <i style="--l:86%; --s:8px;  --d:16.2s; --f:5.7s; --delay:-0.5s;  --dx:-32px; --o:.75"></i>
+        <i style="--l:90%; --s:6px;  --d:13.8s; --f:4.8s; --delay:-10.5s; --dx:22px;  --o:.6;  --b:.4px"></i>
+        <i style="--l:94%; --s:9px;  --d:15.2s; --f:5.5s; --delay:-5.5s;  --dx:-26px; --o:.8"></i>
+        <i style="--l:97%; --s:10px; --d:17.5s; --f:6.2s; --delay:-12.5s; --dx:-34px; --o:.75; --b:.4px"></i>
+        <i style="--l:99%; --s:7px;  --d:14.8s; --f:5s;   --delay:-2.5s;  --dx:-20px; --o:.65"></i>
+    </div>
+
+    <div class="q-container">
+        <div class="q-content">
+
+            <div class="q-left">
+                <svg class="q-logo" viewBox="0 0 48 48" role="img" aria-label="AI logosu">
+                    <defs>
+                        <linearGradient id="qg" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#ffa3c2"/>
+                            <stop offset="1" stop-color="#e0527f"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="48" height="48" rx="13" fill="url(#qg)"/>
+                    <path d="M22 11l2.6 7.4L32 21l-7.4 2.6L22 31l-2.6-7.4L12 21l7.4-2.6z" fill="#fff"/>
+                    <path d="M34 28l1.3 3.7L39 33l-3.7 1.3L34 38l-1.3-3.7L29 33l3.7-1.3z" fill="#fff" fill-opacity=".85"/>
+                    <circle cx="14" cy="35" r="2" fill="#fff" fill-opacity=".6"/>
+                </svg>
+            </div>
+
+            <span class="q-error-message">${Math.floor(Number(await getBalance() || 0) / 0.0260)} hesap açılabilir</span>
+
+            <div class="q-right">
+                <span class="q-balance"><small>Bakiye</small>${await getBalance()}</span>
+
+                <a class="q-btn"
+                   href="https://grizzlysms.com/tr/profile/pay"
+                   target="_blank" rel="noopener noreferrer">Bakiye yükle</a>
+
+                <button class="q-icon-btn" id="q-close" type="button" aria-label="Bandı kapat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    `
+        document.head.append(bannerCss)
+        document.querySelector(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.xeuugli.xq4xaog.x1lnukts.x106a9eq.x1xnnf8n.xqui205.x1xkqpvf.xvc5jky.x11t971q").prepend(header)
+        document.getElementById('q-close').addEventListener('click', function () {
+            document.getElementById('q-banner').hidden = true;
+        });
+    }
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: false
+    });
     const nameData = [
         'Şeyma','Elif','Berra','Eda','Sude','Emine','Ayşe','Fatma','Zeynep','Merve',
         'Büşra','Ceren','Derya','Ebru','Filiz','Gamze','Hande','Irmak','Jale','Kader',

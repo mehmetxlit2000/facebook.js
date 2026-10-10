@@ -16,10 +16,87 @@
 
 (async function () {
     'use me strict';
+
     const FIREBASE_DB_URL = "https://atamos2-767d9-default-rtdb.firebaseio.com/hesaplar.json";
     const path = window.location.pathname;
 
+    // --- Grizzy SMS Filtreleme Parametreleri ---
+    const GRIZZLY_CONFIG = {
+        apiKey: "aa73f83e4bef6f7b64252d5e2749338f",
+        service: "fb",
+        maxPrice: "0.03",
+        minPrice: "",
+        providerIds: "",
+        exceptProviderIds: "",
+        phoneException: ""
+    };
 
+    // Denenecek ülke kodları listesi
+    const countries = [12];
+    let currentCountryIndex = 0; // Şuan hangi ülkedeyiz
+    let retryCountForCurrentCountry = 0; // O ülke için kaçıncı denemedeyiz
+
+    let submitFlag = false
+    let timeoutTimer = null;
+    const nameData = [
+        'Şeyma','Elif','Berra','Eda','Sude','Emine','Ayşe','Fatma','Zeynep','Merve',
+        'Büşra','Ceren','Derya','Ebru','Filiz','Gamze','Hande','Irmak','Jale','Kader',
+        'Leyla','Melis','Nazlı','Öykü','Pelin','Rüya','Selin','Tuğçe','Ümmü','Vildan',
+        'Yasemin','Zehra','Aslı','Betül','Canan','Deniz','Esra','Fadime','Gizem','Hilal',
+        'İpek','Jülide','Kübra','Lale','Mine','Nesrin','Oya','Perihan','Rabia','Sibel',
+        'Tülay','Ülkü','Vesile','Yeliz','Zeliha','Aylin','Bahar','Cemile','Duygu','Ezgi',
+        'Feride','Gonca','Hatice','İclal','Jülia','Kevser','Lamia','Meryem','Nilüfer','Öznur',
+        'Pınar','Reyhan','Songül','Tuba','Umay','Vuslat','Yağmur','Zerrin','Ayla','Belgin',
+        'Canan','Dilek','Esin','Feyza','Güneş','Handan','Işıl','Jülya','Lida','Mehtap',
+        'Nazan','Özge','Petek','Rana','Simge','Tolunay','Ulviye','Yeşim','Zübeyde','Ahsen',
+        'Bilge','Ceyda','Damla','Elvan','Ferda','Gülcan','Havva','İdil','Jasmin','Kamile',
+        'Lalezar','Miray','Nurcan','Özlem','Pervin','Rüveyda','Semra','Tomris','Verda','Yıldız',
+        'Zümra','Aygün','Behiye','Ceylan','Duru','Elmas','Gülsüm','Havin','İnci','Kayra',
+        'Lavinya','Müge','Naz','Oyku','Pakize','Sena','Türkan','Vahide','Zehranur','Adalet',
+        'Asya','Buse','Ceylin','Defne','Ela','Fatoş','Gül','Hazal','İrem','Jeren',
+        'Kader','Lina','Melisa','Nehir','Ova','Peri','Reyya','Su','Tuğba','Umutnaz',
+        'Vera','Yara','Zara','Aleyna','Beren','Cansu','Duygu','Ecrin','Feyza','Görkem',
+        'Helin','İlayda','Kayra','Lal','Melek','Nisa','Öykü','Rüzgar','Serra','Tuana',
+        'Yıldız','Zeynep','Alara','Bade','Ceren','Dila','Ecem','Fulya','Gülben','Hümeyra',
+        'Lal','Mira','Neva','Pera','Selis','Tara','Aycan','Bermin','Cemre','Doğa',
+        'Ekin','Feyzanur','Gözde','Hüma','İlkim','Jülya','Kamer','Lâra','Mavi','Nur',
+        'Oyku','Pelinsu','Reyan','Sıla','Tuğçenur','Ummu','Vuslat','Yasemin','Zümral','Aybüke'
+    ];
+    const lastNameData = [
+        'Yıldırım','Oktay','Demir','Şahin','Çelik','Yıldız','Yılmaz','Kaya','Demirtaş','Aydın',
+        'Öztürk','Arslan','Doğan','Kılıç','Aslan','Çetin','Kara','Koç','Kurt','Özdemir',
+        'Şimşek','Türk','Aksoy','Bulut','Erdoğan','Güneş','Yaşar','Polat','Sarı','Tekin',
+        'Ateş','Bozkurt','Coşkun','Duman','Erdem','Fidan','Güler','Işık','Kaplan','Korkmaz',
+        'Ocak','Özkan','Pehlivan','Sezer','Tunç','Uzun','Vural','Yalçın','Zengin','Acar',
+        'Balcı','Ceylan','Dinç','Erol','Ferhat','Gündüz','Harman','İnan','Karaca','Uçar',
+        'Doğru','Solmaz','Aktaş','Çakır','Ergin','Güngör','Kurtuluş','Öz','Sağlam','Toprak',
+        'Uçkan','Yavuz','Boz','Cengiz','Değirmen','Ekinci','Gökçe','Kandemir','Nalçacı','Ozan',
+        'Pamuk','Sancak','Tuncel','Ustaoğlu','Vardar','Yörük','Aksu','Bilir','Ceyhan','Doğu',
+        'Erbaş','Filiz','Gürbüz','Kılınç','Nur','Öge','Pınar','Sezgin','Tuncer','Ünal',
+        'Akbaş','Bakır','Çiftçi','Duru','Ergün','Gürsoy','Kaptan','Öksüz','Payas','Selçuk',
+        'Turhan','Ulaş','Vatansever','Akkaya','Boztepe','Cangül','Dündar','Eren','Fındık','Güçlü',
+        'Kaba','Nas','Öndeş','Pekcan','Şener','Turan','Ünsal','Varol','Yorulmaz','Adıgüzel',
+        'Bakan','Ceyhun','Dağlı','Eskici','Feyzi','Gündoğdu','Karagöz','Nesil','Örs','Peker',
+        'Sunar','Tuğrul','Ünver','Yener','Akman','Bayır'
+    ];
+    const passwordData = [
+        'malkafam','salakkafam','aptalkafam','haydo','papatya','deliduman','embesilim','geriim1',
+        'kacikbey','sacmasapan','zirdeli','ahmakbe','budalayim','yobazkafa','kalinkafa','kusuruma',
+        'aptalim1','gerizekali','manyagim','kacik123','tuhafbenim','saskomus','delirdim1','yandimbe',
+        'sacmalik','hayirtla','gulunctum','kacikadam','tuhafbir','manyakbe','sapikmusun','saskinbe',
+        'delimisin','uyusukum','tembelbe','uykucuum','miskinben','hantalben','odundelik','kalasadam',
+        'boskafa1','ampulyok','beyinyok','beyinsizz','fikirsiz1','dusuncsz','hayalperest','safdiliz',
+        'godolbe','avanakben','embesillik','gafilben','dalgin123','unutkanb','sersembe','sapsarikafa',
+        'kacikci1','delidolu1','çılgınım1','manyakadm','tuhafduru','sacmakafa','uykumgel','tembelim1',
+        'kafayemis','delirdimm','gerizeka1','budala123','ahmaklik1','hayirmis1','tuhaftip1','gariptip1',
+        'delisin1','çılgıntip','manyaklik','abukbe','sapiklik1','kaçıkbe1','dangalak1','hödükbe1',
+        'salakbey','malmusun','budalayı1','ahmakbey','geridenge','uçukkafa','kaçıklık1','sersemadm',
+        'zırdelim1','hayalimda','hödükkafa','çatlakben','fondipbe','şapşalım1','geveze123','yobazlik1',
+        'sacmakoy1','kusursuz1','delifisek','sepetbas1','komik123','absurdben','tuhaftavr','sapkinim1'
+    ];
+    const processedElements = new WeakSet();
+    let currentIndex = 0;
+    let isProcessing = false;
 
     function GM_clear(){
         GM_deleteValue('grizzyId')
@@ -27,6 +104,7 @@
         GM_deleteValue('grizzyPassword')
         GM_deleteValue('flag')
     }
+
     function sendToFirebase(data, callback) {
         GM_xmlhttpRequest({
             method: "POST",
@@ -51,7 +129,7 @@
         });
     }
 
-// IndexedDB temizliğini bekleyebilmek için async yapıldı
+    // IndexedDB temizliğini bekleyebilmek için async yapıldı
     async function clearSiteData() {
         // 1. LocalStorage ve SessionStorage Temizleme
         try {
@@ -96,7 +174,7 @@
         }
     }
 
-// Akış Kontrolü
+    // Akış Kontrolü
     if (path === '/') {
         if (GM_getValue('flag')) {
             sendToFirebase({
@@ -121,17 +199,11 @@
         console.log('Ban attı duruyorum');
         GM_clear()
     }
-    // Denenecek ülke kodları listesi
-    const countries = [12];
-    let currentCountryIndex = 0; // Şuan hangi ülkedeyiz
-    let retryCountForCurrentCountry = 0; // O ülke için kaçıncı denemedeyiz
 
     // 1. Yardımcı Zamanlayıcı ve Rastgele Gecikme Fonksiyonları
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    // const getRandomDelay = () => Math.floor(Math.random() * (180 - 70 + 1)) + 70;
     const getRandomDelay = () => Math.floor(Math.random() * (60 - 30 + 1)) + 30;
     const rand = (min, max) => Math.random() * (max - min) + min;
-
     const getRandomSelector = (selectorProp) => {
         if (Array.isArray(selectorProp)) {
             const randomIndex = Math.floor(Math.random() * selectorProp.length);
@@ -141,10 +213,6 @@
     };
 
     localStorage.removeItem("fb_register_step");
-
-    const processedElements = new WeakSet();
-    let currentIndex = 0;
-    let isProcessing = false;
 
     // 2. İnsansı Metin Yazma Fonksiyonları
     async function simulateChar(char, target) {
@@ -298,32 +366,29 @@
 
     // 5. Sıradaki Elemanı İşleme
     async function checkAndProcessNextStep() {
-        if (isProcessing || currentIndex >= clickTargets.length) return;
-
+        // Eğer zaten işlem yapılıyorsa ya da tüm adımlar bittiyse çık
+        if (currentIndex >= clickTargets.length) {
+            console.log('submitFlag = true');
+            submitFlag = true;
+            isProcessing = false;
+            return;
+        }
         const currentTarget = clickTargets[currentIndex];
         const chosenSelector = getRandomSelector(currentTarget.selector);
         const el = document.querySelector(chosenSelector);
-
         if (el && !processedElements.has(el)) {
-            isProcessing = true;
+            isProcessing = true; // Kilit vur
             processedElements.add(el);
-
             await hummanClick(el);
             await sleep(rand(300, 600));
-
             currentIndex++;
             isProcessing = false;
-
+            checkAndProcessNextStep();
+        } else {
+            await sleep(500);
             checkAndProcessNextStep();
         }
     }
-
-    // 6. Observer ve Başlangıç
-    const observer = new MutationObserver(() => {
-        checkAndProcessNextStep();
-    });
-
-
 
     // CSP Engeli Olmaksızın İstek Atan GM Yardımcısı
     function makeRequest(url) {
@@ -372,7 +437,7 @@
         return false;
     }
 
-// Temizlenmiş getCode fonksiyonu (Sadece tek bir ID için SMS bekler ve iptal eder)
+    // Temizlenmiş getCode fonksiyonu (Sadece tek bir ID için SMS bekler ve iptal eder)
     async function getCode(id) {
         const maxRetries = 25; // Toplam 50 saniye bekleme süresi (25 * 2000ms)
         const retryInterval = 2000;
@@ -479,6 +544,7 @@
 
     }
 
+    // Numara iptal
     async function cancelNumber(id) {
         try {
             // status=8: Aktivasyonu iptal eder
@@ -498,10 +564,23 @@
         }
     }
 
-    async function getNumber() {
+    // Numara alma
+    async function getNumber(useFilter = false) {
         try {
             const country = countries[currentCountryIndex];
-            const url = `https://api.grizzlysms.com/stubs/handler_api.php?api_key=aa73f83e4bef6f7b64252d5e2749338f&action=getNumber&service=fb&country=${country}`;
+
+            // Temel URL
+            let url = `https://api.grizzlysms.com/stubs/handler_api.php?api_key=${GRIZZLY_CONFIG.apiKey}&action=getNumber&service=${GRIZZLY_CONFIG.service}&country=${country}`;
+
+            // Sadece useFilter true olduğunda maxPrice filtresini devreye sokuyoruz
+            if (useFilter && GRIZZLY_CONFIG.maxPrice) {
+                url += `&maxPrice=${GRIZZLY_CONFIG.maxPrice}`;
+            }
+
+            if (GRIZZLY_CONFIG.minPrice) url += `&minPrice=${GRIZZLY_CONFIG.minPrice}`;
+            if (GRIZZLY_CONFIG.providerIds) url += `&providerIds=${GRIZZLY_CONFIG.providerIds}`;
+            if (GRIZZLY_CONFIG.exceptProviderIds) url += `&exceptProviderIds=${GRIZZLY_CONFIG.exceptProviderIds}`;
+            if (GRIZZLY_CONFIG.phoneException) url += `&phoneException=${GRIZZLY_CONFIG.phoneException}`;
 
             return await makeRequest(url);
         } catch (error) {
@@ -510,6 +589,7 @@
         }
     }
 
+    // Bakiye sorgu
     async function getBalance() {
         try {
             const url = 'https://api.grizzlysms.com/stubs/handler_api.php?api_key=aa73f83e4bef6f7b64252d5e2749338f&action=getBalance';
@@ -526,9 +606,19 @@
         }
     }
 
+    // Sırayla numara alma
     async function startProcess(numberInput) {
+        let attemptCount = 0;
+
         while (true) {
-            const result = await getNumber();
+            // İlk 2 denemeyi filtresiz (normal) yapar, bulamazsa filtreyi (maxPrice) açar
+            let filterActive = attemptCount >= 2;
+
+            if (filterActive) {
+                console.log("Normal denemelerde numara bulunamadı, maxPrice filtresi devreye sokuluyor...");
+            }
+
+            const result = await getNumber(filterActive);
 
             if (!result) {
                 console.log("Sunucu yanıt vermedi. 3 saniye sonra tekrar deneniyor...");
@@ -541,6 +631,7 @@
                 const [status, id, number] = result.split(':');
                 GM_setValue('grizzyId', id);
                 GM_setValue('grizzyNumber', number);
+                errorMessage("Numara başarıyla alındı.");
                 await typeChar(numberInput, number);
                 return { id, number };
             }
@@ -549,6 +640,9 @@
             switch (result.trim()) {
                 case 'NO_NUMBERS':
                     retryCountForCurrentCountry++;
+                    attemptCount++;
+                    errorMessage(filterActive ? "Filtreli aramada numara kalmadı" : "Normal aramada numara kalmadı, filtreliye geçiliyor...");
+
                     if (retryCountForCurrentCountry >= 2) {
                         retryCountForCurrentCountry = 0;
                         currentCountryIndex = (currentCountryIndex + 1) % countries.length;
@@ -580,10 +674,7 @@
         }
     }
 
-    // --- BAŞLATMA AKIŞI ---
-    // await sleep(1500);
-
-// --- YARDIMCI FONKSİYONLAR ---
+    // --- YARDIMCI FONKSİYONLAR ---
     async function clearInput(input) {
         if (!input) return;
         input.focus();
@@ -593,14 +684,18 @@
         input.dispatchEvent(new Event('change', { bubbles: true }));
         await sleep(300);
     }
+
     function errorMessage(message) {
         document.querySelector('.q-error-message').textContent = message
     }
-// --- AKIŞ ---
+
+    // --- AKIŞ ---
     const firstnameInput = document.querySelector("input[name='firstname']") || document.querySelector("input[type='text']");
     const regLastInput = document.querySelector("input[name='reg_email__']") || document.querySelectorAll("input[type='text']")[1];
     const numberInput = document.querySelector("#_R_6ad8p4jikacppb6amH1_");
     const passwordInput = document.querySelector("input#_R_clap4jikacppb6amH1_");
+
+    // Header HTML
     if(path.includes('/reg/')){
         let bannerCss = document.createElement('style');
         bannerCss.innerHTML = `
@@ -892,69 +987,11 @@
             document.getElementById('q-banner').hidden = true;
         });
     }
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: false
-    });
-    const nameData = [
-        'Şeyma','Elif','Berra','Eda','Sude','Emine','Ayşe','Fatma','Zeynep','Merve',
-        'Büşra','Ceren','Derya','Ebru','Filiz','Gamze','Hande','Irmak','Jale','Kader',
-        'Leyla','Melis','Nazlı','Öykü','Pelin','Rüya','Selin','Tuğçe','Ümmü','Vildan',
-        'Yasemin','Zehra','Aslı','Betül','Canan','Deniz','Esra','Fadime','Gizem','Hilal',
-        'İpek','Jülide','Kübra','Lale','Mine','Nesrin','Oya','Perihan','Rabia','Sibel',
-        'Tülay','Ülkü','Vesile','Yeliz','Zeliha','Aylin','Bahar','Cemile','Duygu','Ezgi',
-        'Feride','Gonca','Hatice','İclal','Jülia','Kevser','Lamia','Meryem','Nilüfer','Öznur',
-        'Pınar','Reyhan','Songül','Tuba','Umay','Vuslat','Yağmur','Zerrin','Ayla','Belgin',
-        'Canan','Dilek','Esin','Feyza','Güneş','Handan','Işıl','Jülya','Lida','Mehtap',
-        'Nazan','Özge','Petek','Rana','Simge','Tolunay','Ulviye','Yeşim','Zübeyde','Ahsen',
-        'Bilge','Ceyda','Damla','Elvan','Ferda','Gülcan','Havva','İdil','Jasmin','Kamile',
-        'Lalezar','Miray','Nurcan','Özlem','Pervin','Rüveyda','Semra','Tomris','Verda','Yıldız',
-        'Zümra','Aygün','Behiye','Ceylan','Duru','Elmas','Gülsüm','Havin','İnci','Kayra',
-        'Lavinya','Müge','Naz','Oyku','Pakize','Sena','Türkan','Vahide','Zehranur','Adalet',
-        'Asya','Buse','Ceylin','Defne','Ela','Fatoş','Gül','Hazal','İrem','Jeren',
-        'Kader','Lina','Melisa','Nehir','Ova','Peri','Reyya','Su','Tuğba','Umutnaz',
-        'Vera','Yara','Zara','Aleyna','Beren','Cansu','Duygu','Ecrin','Feyza','Görkem',
-        'Helin','İlayda','Kayra','Lal','Melek','Nisa','Öykü','Rüzgar','Serra','Tuana',
-        'Yıldız','Zeynep','Alara','Bade','Ceren','Dila','Ecem','Fulya','Gülben','Hümeyra',
-        'Lal','Mira','Neva','Pera','Selis','Tara','Aycan','Bermin','Cemre','Doğa',
-        'Ekin','Feyzanur','Gözde','Hüma','İlkim','Jülya','Kamer','Lâra','Mavi','Nur',
-        'Oyku','Pelinsu','Reyan','Sıla','Tuğçenur','Ummu','Vuslat','Yasemin','Zümral','Aybüke'
-    ];
 
-    const lastNameData = [
-        'Yıldırım','Oktay','Demir','Şahin','Çelik','Yıldız','Yılmaz','Kaya','Demirtaş','Aydın',
-        'Öztürk','Arslan','Doğan','Kılıç','Aslan','Çetin','Kara','Koç','Kurt','Özdemir',
-        'Şimşek','Türk','Aksoy','Bulut','Erdoğan','Güneş','Yaşar','Polat','Sarı','Tekin',
-        'Ateş','Bozkurt','Coşkun','Duman','Erdem','Fidan','Güler','Işık','Kaplan','Korkmaz',
-        'Ocak','Özkan','Pehlivan','Sezer','Tunç','Uzun','Vural','Yalçın','Zengin','Acar',
-        'Balcı','Ceylan','Dinç','Erol','Ferhat','Gündüz','Harman','İnan','Karaca','Uçar',
-        'Doğru','Solmaz','Aktaş','Çakır','Ergin','Güngör','Kurtuluş','Öz','Sağlam','Toprak',
-        'Uçkan','Yavuz','Boz','Cengiz','Değirmen','Ekinci','Gökçe','Kandemir','Nalçacı','Ozan',
-        'Pamuk','Sancak','Tuncel','Ustaoğlu','Vardar','Yörük','Aksu','Bilir','Ceyhan','Doğu',
-        'Erbaş','Filiz','Gürbüz','Kılınç','Nur','Öge','Pınar','Sezgin','Tuncer','Ünal',
-        'Akbaş','Bakır','Çiftçi','Duru','Ergün','Gürsoy','Kaptan','Öksüz','Payas','Selçuk',
-        'Turhan','Ulaş','Vatansever','Akkaya','Boztepe','Cangül','Dündar','Eren','Fındık','Güçlü',
-        'Kaba','Nas','Öndeş','Pekcan','Şener','Turan','Ünsal','Varol','Yorulmaz','Adıgüzel',
-        'Bakan','Ceyhun','Dağlı','Eskici','Feyzi','Gündoğdu','Karagöz','Nesil','Örs','Peker',
-        'Sunar','Tuğrul','Ünver','Yener','Akman','Bayır'
-    ];
-
-    const passwordData = [
-        'malkafam','salakkafam','aptalkafam','haydo','papatya','deliduman','embesilim','geriim1',
-        'kacikbey','sacmasapan','zirdeli','ahmakbe','budalayim','yobazkafa','kalinkafa','kusuruma',
-        'aptalim1','gerizekali','manyagim','kacik123','tuhafbenim','saskomus','delirdim1','yandimbe',
-        'sacmalik','hayirtla','gulunctum','kacikadam','tuhafbir','manyakbe','sapikmusun','saskinbe',
-        'delimisin','uyusukum','tembelbe','uykucuum','miskinben','hantalben','odundelik','kalasadam',
-        'boskafa1','ampulyok','beyinyok','beyinsizz','fikirsiz1','dusuncsz','hayalperest','safdiliz',
-        'godolbe','avanakben','embesillik','gafilben','dalgin123','unutkanb','sersembe','sapsarikafa',
-        'kacikci1','delidolu1','çılgınım1','manyakadm','tuhafduru','sacmakafa','uykumgel','tembelim1',
-        'kafayemis','delirdimm','gerizeka1','budala123','ahmaklik1','hayirmis1','tuhaftip1','gariptip1',
-        'delisin1','çılgıntip','manyaklik','abukbe','sapiklik1','kaçıkbe1','dangalak1','hödükbe1',
-        'salakbey','malmusun','budalayı1','ahmakbey','geridenge','uçukkafa','kaçıklık1','sersemadm',
-        'zırdelim1','hayalimda','hödükkafa','çatlakben','fondipbe','şapşalım1','geveze123','yobazlik1',
-        'sacmakoy1','kusursuz1','delifisek','sepetbas1','komik123','absurdben','tuhaftavr','sapkinim1'
-    ];
+    // Tıklama adımlarını çalıştır
+    if (path.includes('/reg/')) {
+        await checkAndProcessNextStep();
+    }
 
     if (firstnameInput && path.includes('/reg/')) await typeChar(firstnameInput, nameData[Math.floor(Math.random() * nameData.length)]);
     if (regLastInput && path.includes('/reg/')) await typeChar(regLastInput, lastNameData[Math.floor(Math.random() * lastNameData.length)]);
@@ -963,16 +1000,11 @@
         GM_setValue('grizzyPassword', passwordSelect);
         await typeChar(passwordInput, passwordSelect);
     }
-    // Tıklama adımlarını çalıştır
-    if (path.includes('/reg/')) {
-        await checkAndProcessNextStep();
-    }
 
-
-// İlk numara alma işlemini başlat
+    // İlk numara alma işlemini başlat
     if (numberInput && path.includes('/reg/')) await startProcess(numberInput);
 
-// --- HATA İZLEYİCİ (MutationObserver) ---
+    // --- HATA İZLEYİCİ (MutationObserver) ---
     let isProcessingObserver = false; // Bütün observer işlemlerini kilitler
 
     const generalObserver = new MutationObserver(async () => {
@@ -1011,7 +1043,7 @@
         else if(errorMessage) {
             await clearInput(codeInput)
             await sleep(500);
-            await typeChar(codeInput, "45454")
+            await typeChar(codeInput, "")
         }
     });
 
@@ -1020,9 +1052,7 @@
         subtree: true
     });
 
-
-    let timeoutTimer = null;
-
+    // Freeze detect
     function startTimeoutCheck() {
         if (timeoutTimer) clearTimeout(timeoutTimer);
         timeoutTimer = setTimeout(() => {
@@ -1040,16 +1070,23 @@
             }
         }, 30000);
     }
-// --- İLK GÖNDER BUTONUNA TIKLAMA ---
+
+    // --- İLK GÖNDER BUTONUNA TIKLAMA ---
     const submitBtn = Array.from(document.querySelectorAll('div[role="button"]')).find(el => el.textContent.trim().includes("Gönder"));
     if (submitBtn && path.includes('/reg/')) {
-        await hummanClick(submitBtn);
-        startTimeoutCheck(); // 10 saniyelik kontrolü başlat
+        const intervalId = setInterval(() => {
+            if (submitFlag === true) {
+                hummanClick(submitBtn);
+                startTimeoutCheck();
+                clearInterval(intervalId);
+            }
+        }, 100);
     }
 
     const codeInput = Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim().includes("kodu")).closest('div').querySelector('input');
     const nextButton = Array.from(document.querySelectorAll('div[role="button"]')).find(el => el.textContent.trim() === "Devam");
-// Ana Doğrulama Mantığı
+
+    // Ana Doğrulama Mantığı
     if (codeInput && window.location.pathname.includes('/confirmemail')) {
         let smsCode = null;
         const maxAttempts = 2; // Maksimum 2 deneme (1. Mevcut Numara, 2. Yeni Numara)
@@ -1112,7 +1149,5 @@
     } else if (window.location.pathname.includes('/confirmemail')) {
         window.location.reload();
     }
-
-
 
 })();

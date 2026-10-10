@@ -15,7 +15,7 @@
 // ==/UserScript==
 
 (async function () {
-    'use me strict';
+    'use strict';
 
     const FIREBASE_DB_URL = "https://atamos2-767d9-default-rtdb.firebaseio.com/hesaplar.json";
     const path = window.location.pathname;
@@ -59,7 +59,7 @@
         'Helin','İlayda','Kayra','Lal','Melek','Nisa','Öykü','Rüzgar','Serra','Tuana',
         'Yıldız','Zeynep','Alara','Bade','Ceren','Dila','Ecem','Fulya','Gülben','Hümeyra',
         'Lal','Mira','Neva','Pera','Selis','Tara','Aycan','Bermin','Cemre','Doğa',
-        'Ekin','Feyzanur','Gözde','Hüma','İlkim','Jülya','Kamer','Lâra','Mavi','Nur',
+        'Ekin','Feyzanur','Gözde','Hüma','Jülya','Kamer','Lâra','Mavi','Nur',
         'Oyku','Pelinsu','Reyan','Sıla','Tuğçenur','Ummu','Vuslat','Yasemin','Zümral','Aybüke'
     ];
     const lastNameData = [
@@ -368,7 +368,6 @@
     async function checkAndProcessNextStep() {
         // Eğer zaten işlem yapılıyorsa ya da tüm adımlar bittiyse çık
         if (currentIndex >= clickTargets.length) {
-            console.log('submitFlag = true');
             submitFlag = true;
             isProcessing = false;
             return;
@@ -410,29 +409,58 @@
         });
     }
 
-    // Ayrı ve modüler numara değiştirme fonksiyonu
-    async function tryReplaceNumber() {
-        await cancelNumber(GM_getValue('grizzyId'))
-        GM_deleteValue('grizzyId')
-        GM_deleteValue('grizzyNumber')
-        const codePanel = Array.from(document.querySelectorAll('span')).find(el => el.textContent.trim() === "Kodu almadım");
-        if (codePanel) {
-            await hummanClick(codePanel);
-            await sleep(2000);
+    // --- YENİ EKLENEN: Dinamik Element Bekleme Fonksiyonu ---
+    async function waitForElement(selectorFn, timeout = 10000) {
+        const start = Date.now();
+        while (Date.now() - start < timeout) {
+            const el = selectorFn();
+            if (el) return el;
+            await sleep(300);
         }
-        const replaceNumber = Array.from(document.querySelectorAll('div')).find(el => el.textContent.trim() === "Cep telefonu numarası veya e-postayı değiştir");
+        return null;
+    }
+
+    // Ayrı ve modüler numara değiştirme fonksiyonu (Güncellendi)
+    async function tryReplaceNumber() {
+        await cancelNumber(GM_getValue('grizzyId'));
+        GM_deleteValue('grizzyId');
+        GM_deleteValue('grizzyNumber');
+
+        const replaceNumber = await waitForElement(() =>
+            Array.from(document.querySelectorAll('div')).find(el => el.textContent.trim() === "Cep telefonu numarası veya e-postayı değiştir")
+        );
         if (replaceNumber) {
             await hummanClick(replaceNumber);
             await sleep(2000);
         }
-        const replaceNumberInput = Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim() === "E-posta adresi veya cep telefonu numarası").closest('div').querySelector('input');
+
+        const replaceNumberInput = await waitForElement(() => {
+            const label = Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim() === "E-posta adresi veya cep telefonu numarası");
+            return label ? label.closest('div').querySelector('input') : null;
+        });
+
         if (replaceNumberInput) {
             await hummanClick(replaceNumberInput);
-            await sleep(2000);
-            await startProcess(replaceNumberInput);
-            const replaceNumberAdd = Array.from(document.querySelectorAll('span')).filter(el => el.textContent.trim() === 'Ekle' && el.getBoundingClientRect().width > 0).pop()?.closest('button, [role="button"]');
-            await hummanClick(replaceNumberAdd);
-            return true; // Numara değiştirme adımları başarıyla tetiklendi
+            await sleep(1000);
+
+            // Numara alınıp inputa yazılma işleminin bitmesini bekliyoruz
+            const processResult = await startProcess(replaceNumberInput);
+            if (!processResult) {
+                console.error("Yeni numara alınamadı!");
+                return false;
+            }
+
+            // Numara yazıldıktan sonra Ekle butonunu güvenle aratıp tıklıyoruz
+            const replaceNumberAdd = await waitForElement(() =>
+                Array.from(document.querySelectorAll('span')).filter(el => el.textContent.trim() === 'Ekle' && el.getBoundingClientRect().width > 0).pop()?.closest('button, [role="button"]')
+            );
+
+            if (replaceNumberAdd) {
+                await hummanClick(replaceNumberAdd);
+                return true;
+            } else {
+                console.error("'Ekle' butonu bulunamadı.");
+            }
         }
         return false;
     }
@@ -631,7 +659,7 @@
                 const [status, id, number] = result.split(':');
                 GM_setValue('grizzyId', id);
                 GM_setValue('grizzyNumber', number);
-                errorMessage("Numara başarıyla alındı.");
+                if(path.includes('/reg/')) errorMessage("Numara başarıyla alındı.");
                 await typeChar(numberInput, number);
                 return { id, number };
             }
@@ -641,7 +669,7 @@
                 case 'NO_NUMBERS':
                     retryCountForCurrentCountry++;
                     attemptCount++;
-                    errorMessage(filterActive ? "Filtreli aramada numara kalmadı" : "Normal aramada numara kalmadı, filtreliye geçiliyor...");
+                    if(path.includes('/reg/')) errorMessage(filterActive ? "Filtreli aramada numara kalmadı" : "Normal aramada numara kalmadı");
 
                     if (retryCountForCurrentCountry >= 2) {
                         retryCountForCurrentCountry = 0;
@@ -651,24 +679,24 @@
                     break;
 
                 case 'BAD_KEY':
-                    errorMessage(" Geçersiz API anahtarı!");
+                    if(path.includes('/reg/')) errorMessage(" Geçersiz API anahtarı!");
                     return null;
 
                 case 'NO_BALANCE':
                     const currentBalance = await getBalance();
-                    errorMessage(`Hata: Bakiye yetersiz!`);
+                    if(path.includes('/reg/')) errorMessage(`Hata: Bakiye yetersiz!`);
                     return null;
 
                 case 'The service is prohibited for sale by administration':
-                    errorMessage(" Hata: Bu servisin satışı yönetim tarafından yasaklanmıştır.");
+                    if(path.includes('/reg/')) errorMessage(" Hata: Bu servisin satışı yönetim tarafından yasaklanmıştır.");
                     return null;
 
                 case 'SERVICE_UNAVAILABLE_REGION':
-                    errorMessage(" Hata: Bölgenizden erişim kısıtlı.");
+                    if(path.includes('/reg/')) errorMessage(" Hata: Bölgenizden erişim kısıtlı.");
                     return null;
 
                 default:
-                    errorMessage(" Tanımlanamayan Yanıt:", result);
+                    if(path.includes('/reg/')) errorMessage(" Tanımlanamayan Yanıt:", result);
                     return null;
             }
         }
@@ -1004,65 +1032,18 @@
     // İlk numara alma işlemini başlat
     if (numberInput && path.includes('/reg/')) await startProcess(numberInput);
 
-    // --- HATA İZLEYİCİ (MutationObserver) ---
-    let isProcessingObserver = false; // Bütün observer işlemlerini kilitler
-
-    const generalObserver = new MutationObserver(async () => {
-        if (isProcessingObserver) return;
-
-        const currentError = Array.from(document.querySelectorAll('span')).find(el => el.textContent.includes("Cep telefonu numaran doğrulanamadı"));
-        const targetErrors = [
-            "Lütfen gönderdiğimiz SMS'i kontrol et ve 5 haneli kodu gir.",
-            "Girdiğin onay kodu geçersiz veya zaman aşımına uğramış. Lütfen onay kodunu doğru girdiğinden emin ol.",
-            "Hesap onaylanırken bir hata oluştu. Lütfen tekrar dene.",
-        ];
-        const errorMessage = Array.from(document.querySelectorAll('span')).find(el =>
-            targetErrors.includes(el.textContent.trim())
-        );
-
-        // DURUM 1: Numara Doğrulama Hatası Yapısı
-        if (currentError) {
-            isProcessingObserver = true;
-            console.warn("Hata tespit edildi! Numara temizleniyor ve yenisi alınıyor...");
-
-            if (numberInput) {
-                await clearInput(numberInput);
-                await sleep(500);
-                await startProcess(numberInput);
-
-                const btn = Array.from(document.querySelectorAll('div[role="button"]')).find(el => el.textContent.trim().includes("Gönder"));
-                if (btn) {
-                    await hummanClick(btn);
-                    startTimeoutCheck();
-                }
-            }
-
-            await sleep(2000);
-            isProcessingObserver = false;
-        }
-        else if(errorMessage) {
-            await clearInput(codeInput)
-            await sleep(500);
-            await typeChar(codeInput, "")
-        }
-    });
-
-    generalObserver.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-
     // Freeze detect
     function startTimeoutCheck() {
         if (timeoutTimer) clearTimeout(timeoutTimer);
         timeoutTimer = setTimeout(() => {
             const currentError = Array.from(document.querySelectorAll('span')).find(el => el.textContent.includes("Cep telefonu numaran doğrulanamadı"));
-            const codeInput = Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim().includes("kodu")).closest('div').querySelector('input');
             if (!currentError && path.includes('/reg/')) {
                 cancelNumber(GM_getValue('grizzyId'))
                 GM_clear()
                 location.reload();
-            } else if(codeInput && window.location.pathname.includes('/confirmemail')) {
+            } else if(window.location.pathname.includes('/confirmemail')) {
+                // const codeInput = Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim().includes("kodu")).closest('div').querySelector('input');
+
                 console.log('veriler silincek')
                 cancelNumber(GM_getValue('grizzyId'))
                 GM_clear()
@@ -1098,12 +1079,17 @@
             // 1. DENEME: Mevcut numaraya tekrar kod iste
             if (attempt === 1) {
                 console.log("Mevcut numara için tekrar kod gönderme adımları uygulanıyor...");
-                const codePanel = Array.from(document.querySelectorAll('span')).find(el => el.textContent.trim() === "Kodu almadım");
+
+                const codePanel = await waitForElement(() =>
+                    Array.from(document.querySelectorAll('span')).find(el => el.textContent.trim() === "Kodu almadım")
+                );
                 if (codePanel) {
                     await hummanClick(codePanel);
                     await sleep(2000);
                 }
-                const codeAgain = Array.from(document.querySelectorAll('div')).find(el => el.textContent.trim() === "Onay kodunu tekrar gönder");
+                const codeAgain = await waitForElement(() =>
+                    Array.from(document.querySelectorAll('div')).find(el => el.textContent.trim() === "Onay kodunu tekrar gönder")
+                );
                 if (codeAgain) {
                     await hummanClick(codeAgain);
                     await sleep(1000);

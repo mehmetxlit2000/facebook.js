@@ -81,19 +81,29 @@
         'Sunar','Tuğrul','Ünver','Yener','Akman','Bayır'
     ];
     const passwordData = [
-        'malkafam','salakkafam','aptalkafam','haydo','papatya','deliduman','embesilim','geriim1',
-        'kacikbey','sacmasapan','zirdeli','ahmakbe','budalayim','yobazkafa','kalinkafa','kusuruma',
-        'aptalim1','gerizekali','manyagim','kacik123','tuhafbenim','saskomus','delirdim1','yandimbe',
-        'sacmalik','hayirtla','gulunctum','kacikadam','tuhafbir','manyakbe','sapikmusun','saskinbe',
-        'delimisin','uyusukum','tembelbe','uykucuum','miskinben','hantalben','odundelik','kalasadam',
-        'boskafa1','ampulyok','beyinyok','beyinsizz','fikirsiz1','dusuncsz','hayalperest','safdiliz',
-        'godolbe','avanakben','embesillik','gafilben','dalgin123','unutkanb','sersembe','sapsarikafa',
-        'kacikci1','delidolu1','çılgınım1','manyakadm','tuhafduru','sacmakafa','uykumgel','tembelim1',
-        'kafayemis','delirdimm','gerizeka1','budala123','ahmaklik1','hayirmis1','tuhaftip1','gariptip1',
-        'delisin1','çılgıntip','manyaklik','abukbe','sapiklik1','kaçıkbe1','dangalak1','hödükbe1',
-        'salakbey','malmusun','budalayı1','ahmakbey','geridenge','uçukkafa','kaçıklık1','sersemadm',
-        'zırdelim1','hayalimda','hödükkafa','çatlakben','fondipbe','şapşalım1','geveze123','yobazlik1',
-        'sacmakoy1','kusursuz1','delifisek','sepetbas1','komik123','absurdben','tuhaftavr','sapkinim1'
+        // Önceki filtrelenmiş liste
+        'malkafam', 'salakkafam', 'aptalkafam', 'haydo', 'papatya', 'deliduman', 'embesilim',
+        'kacikbey', 'sacmasapan', 'zirdeli', 'ahmakbe', 'budalayim', 'yobazkafa', 'kalinkafa',
+        'kusuruma', 'gerizekali', 'manyagim', 'tuhafbenim', 'saskomus', 'yandimbe', 'sacmalik',
+        'hayirtla', 'gulunctum', 'kacikadam', 'tuhafbir', 'manyakbe', 'sapikmusun', 'saskinbe',
+        'delimisin', 'uyusukum', 'tembelbe', 'uykucuum', 'miskinben', 'hantalben', 'odundelik',
+        'kalasadam', 'ampulyok', 'beyinyok', 'beyinsizz', 'dusuncsz', 'hayalperest', 'safdiliz',
+        'godolbe', 'avanakben', 'embesillik', 'gafilben', 'unutkanb', 'sersembe', 'sapsarikafa',
+        'manyakadm', 'tuhafduru', 'sacmakafa', 'uykumgel', 'kafayemis', 'delirdimm', 'manyaklik',
+        'abukbe', 'salakbey', 'malmusun', 'ahmakbey', 'geridenge', 'sersemadm', 'hayalimda',
+        'fondipbe', 'delifisek', 'absurdben', 'tuhaftavr',
+
+
+        'boskukara', 'lafazan', 'pisikopat', 'gevezelik', 'dalginlik', 'sersemlik', 'miskinlik',
+        'hantallik', 'tembellik', 'uykuculuk', 'saskinlik', 'delilikler', 'manyaklik', 'safdilcik',
+        'avanaklik', 'gabakafa', 'bodoslama', 'ziplama', 'ziplayis', 'kosmaca', 'saklaban',
+        'soytarim', 'palyaco', 'dalkavuk', 'zibidi', 'ziplambak', 'fistikli', 'cikolata',
+        'kumpirci', 'simitci', 'borekci', 'lahmacun', 'pideci', 'kebapci', 'lokanta',
+        'cafeteria', 'pansiyon', 'motelci', 'otelli', 'tatilci', 'geziyor', 'dolasma',
+        'yuruyus', 'kosuyor', 'zipliyor', 'gulucuk', 'neseli', 'mutluluk', 'huzurlu',
+        'heyecan', 'macera', 'kesifci', 'gezegen', 'yildizlar', 'galaksi', 'uzayli',
+        'robotik', 'bilgisayar', 'klavye', 'farecik', 'monitor', 'ekranlar', 'yazilim',
+        'kodlama', 'program', 'internet', 'baglanti', 'agitemeli', 'sistemci', 'veritabani'
     ];
     const processedElements = new WeakSet();
     let currentIndex = 0;
@@ -419,7 +429,6 @@
             clearSiteData()
             window.location.href = 'https://www.facebook.com/reg/';
         } )
-        console.log('Ban attı duruyorum');
         GM_clear()
     }
 
@@ -1578,7 +1587,8 @@
         });
 
         document.head.append(bannerCss);
-        document.querySelector(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.xeuugli.xq4xaog.x1lnukts.x106a9eq.x1xnnf8n.xqui205.x1xkqpvf.xvc5jky.x11t971q").prepend(header);
+        let bannerContainer = await waitForElement(() => document.querySelector(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.xeuugli.xq4xaog.x1lnukts.x106a9eq.x1xnnf8n.xqui205.x1xkqpvf.xvc5jky.x11t971q"))
+        bannerContainer.prepend(header);
         document.getElementById('q-close').addEventListener('click', function () {
             document.getElementById('q-banner').hidden = true;
         });

@@ -422,14 +422,29 @@
     } else if (path.includes('/login')) {
         window.location.href = 'https://www.facebook.com/reg/';
     } else if (path.includes('/checkpoint')) {
-        document.head.appendChild(style);
-        document.body.innerHTML = html;
-        document.getElementById('q-check-next').addEventListener('click', () => {
-            GM_clear()
-            clearSiteData()
-            window.location.href = 'https://www.facebook.com/reg/';
-        } )
-        GM_clear()
+        const applyCheckpoint = () => {
+            document.head.appendChild(style);
+            document.body.innerHTML = html;
+
+            const nextBtn = document.getElementById('q-check-next');
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    GM_clear();
+                    clearSiteData();
+                    window.location.href = 'https://www.facebook.com/reg/';
+                });
+            }
+            GM_clear();
+        };
+
+        // Sayfanın ve Facebook betiklerinin sakinleşmesini bekle, sonra güvenle uygula
+        if (document.readyState === 'complete') {
+            setTimeout(applyCheckpoint, 500);
+        } else {
+            window.addEventListener('load', () => {
+                setTimeout(applyCheckpoint, 500);
+            });
+        }
     }
 
     // 1. Yardımcı Zamanlayıcı ve Rastgele Gecikme Fonksiyonları
@@ -981,7 +996,10 @@
     }
 
     function errorMessage(message) {
-        document.querySelector('.q-error-message').textContent = message
+        const errorMessageSpan = document.querySelector('.q-error-message')
+        if(errorMessageSpan) {
+            errorMessageSpan.textContent = message
+        }
     }
 
     // --- AKIŞ ---
@@ -992,7 +1010,7 @@
     const passwordInput = document.querySelector("input#_R_clap4jikacppb6amH1_");
 
     // Header HTML
-    if(path.includes('/reg/')){
+    if (path.includes('/reg/')) {
         const qBalance = await getBalance();
         const qCount = Math.floor(Number(qBalance || 0) / 0.0260);
 
@@ -1024,13 +1042,13 @@
             let out = '<g>';
             pts.forEach(p => out += `<circle cx="${f(p.x)}" cy="${f(p.y + 1)}" r="${f(p.r + 0.25)}" fill="#e9739b"/>`);
             pts.forEach(p => out += `<circle cx="${f(p.x)}" cy="${f(p.y)}" r="${f(p.r)}" fill="#ff9dbe"/>`);
-            pts.forEach(p => { if (p.y < cy + ry * 0.25) out += `<circle cx="${f(p.x - 0.7)}" cy="${f(p.y - 0.9)}" r="${f(p.r * 0.68)}" fill="#ffc7da"/>`; });
-            pts.forEach((p, i) => { if (i % 2 === 0 && p.y < cy) out += `<circle cx="${f(p.x - 1.1)}" cy="${f(p.y - 1.5)}" r="${f(p.r * 0.3)}" fill="#fff1f6"/>`; });
+            pts.forEach(p => { if (p.y < cy + ry * 0.25) out += `<circle cx="${f(p.x - 0.7)}" cy="${f(p.y - 0.9)}" r="${f(p.r - 0.68)}" fill="#ffc7da"/>`; });
+            pts.forEach((p, i) => { if (i % 2 === 0 && p.y < cy) out += `<circle cx="${f(p.x - 1.1)}" cy="${f(p.y - 1.5)}" r="${f(p.r - 0.3)}" fill="#fff1f6"/>`; });
             for (let i = 0; i < 9; i++) {
                 const a = rnd() * Math.PI * 2;
                 const rr = Math.sqrt(rnd()) * 0.92;
                 const x = cx + Math.cos(a) * rx * rr;
-                const y = cy + Math.sin(a) * ry * rr * 0.9;
+                const y = cy + Math.sin(a) * ry * rr - 0.9;
                 out += `<circle cx="${f(x)}" cy="${f(y)}" r="${i % 3 === 0 ? 0.55 : 0.4}" fill="${i % 3 === 0 ? '#ffffff' : '#e45d8c'}" opacity="${i % 3 === 0 ? 0.9 : 0.7}"/>`;
             }
             return out + '</g>';
@@ -1038,536 +1056,513 @@
 
         let bannerCss = document.createElement('style');
         bannerCss.innerHTML = `
-    .q-banner {
-        --white: #ffffff;
-        --ink: #3a2230;
-        --muted: #a08494;
-        --line: #fbe3ec;
-        --p-50: #fff5f8;
-        --p-100: #ffe4ee;
-        --p-200: #ffcfe0;
-        --p-500: #ff8fb3;
-        --p-600: #d0416c;
-        --p-700: #b3305a;
-        --err: #d6336c;
+.q-banner {
+    --white: #ffffff;
+    --ink: #3a2230;
+    --muted: #a08494;
+    --line: #fbe3ec;
+    --p-50: #fff5f8;
+    --p-100: #ffe4ee;
+    --p-200: #ffcfe0;
+    --p-500: #ff8fb3;
+    --p-600: #d0416c;
+    --p-700: #b3305a;
+    --err: #d6336c;
 
-        position: sticky;
-        top: 2px;
-        z-index: 1000;
-        width: calc(100% - 20px);
-        height: 54px;
-        margin: 8px auto 0;
-        overflow: hidden;
-        contain: layout style paint;
+    position: sticky;
+    top: 2px;
+    z-index: 1000;
+    width: calc(100% - 20px);
+    height: 54px;
+    margin: 8px auto 0;
+    overflow: hidden;
+    contain: layout style paint;
 
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        background: linear-gradient(135deg, #ffffff 0%, #fff7fa 100%);
-        box-shadow: 0 4px 16px rgba(255, 120, 160, .12);
-        font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
-        color: var(--ink);
-    }
-    .q-banner, .q-banner * { box-sizing: border-box; }
-    .q-banner[hidden] { display: none; }
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ffffff 0%, #fff7fa 100%);
+    box-shadow: 0 4px 16px rgba(255, 120, 160, .12);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    color: var(--ink);
+}
+.q-banner, .q-banner * { box-sizing: border-box; }
+.q-banner[hidden] { display: none; }
 
-    /* Sekme arka plandayken animasyonlar durur */
-    .q-paused, .q-paused *, .q-paused *::before, .q-paused *::after {
-        animation-play-state: paused !important;
-    }
+.q-paused, .q-paused *, .q-paused *::before, .q-paused *::after {
+    animation-play-state: paused !important;
+}
 
-    .q-banner::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 10%; right: 10%;
-        height: 2px;
-        z-index: 2;
-        background: linear-gradient(90deg, transparent, var(--p-500), transparent);
-        border-radius: 999px;
-    }
+.q-banner::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 2px;
+    z-index: 2;
+    background: linear-gradient(90deg, transparent, var(--p-500), transparent);
+    border-radius: 999px;
+}
 
-    /* ---- Arka plan yaprakları ---- */
-    .q-petals {
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        pointer-events: none;
-        overflow: hidden;
-    }
-    .q-petals i {
-        position: absolute;
-        top: -10px;
-        left: var(--l);
-        width: var(--s);
-        height: var(--s);
+.q-petals {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.q-petals i {
+    position: absolute;
+    top: -10px;
+    left: var(--l);
+    width: var(--s);
+    height: var(--s);
+    opacity: 0;
+    border-radius: 75% 0 75% 0;
+    background: linear-gradient(135deg, #ffe4ee 0%, #ffb7cf 70%, #ff9fbf 100%);
+    animation: q-drift var(--d) linear var(--delay) infinite;
+}
+@keyframes q-drift {
+    0%   { transform: translate3d(0, -6px, 0) rotate(-20deg); opacity: 0; }
+    12%  { opacity: var(--o, .8); }
+    50%  { transform: translate3d(calc(var(--dx) * .55), 26px, 0) rotate(100deg); }
+    85%  { opacity: var(--o, .8); }
+    100% { transform: translate3d(var(--dx), 64px, 0) rotate(200deg); opacity: 0; }
+}
+
+.q-container { position: relative; z-index: 1; height: 100%; padding: 0 12px; }
+.q-content {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.q-left, .q-right { display: flex; align-items: center; gap: 10px; min-width: 0; flex: none; }
+
+.q-error-message {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 12px 4px 8px;
+    border-radius: 999px;
+    background: rgba(255, 243, 247, .92);
+    color: var(--err);
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 0 1 auto;
+}
+.q-error-message::before {
+    content: "";
+    flex: none;
+    width: 16px; height: 16px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d6336c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/%3E%3Cpath d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.q-error-message b { font-weight: 700; }
+.q-short { display: none; }
+
+.q-balance {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    padding: 4px 11px;
+    border-radius: 8px;
+    background: var(--p-50);
+    border: 1px solid var(--p-100);
+    color: var(--p-700);
+    font-size: 13px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.q-balance small { font-size: 11px; font-weight: 400; color: var(--muted); }
+
+.q-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    padding: 6px 13px;
+    border-radius: 8px;
+    background: var(--p-600);
+    color: #fff;
+    font-size: 12.5px; font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .15s ease;
+}
+.q-btn:hover { background: var(--p-700); }
+.q-btn-plus { display: none; font-size: 17px; line-height: 1; font-weight: 700; }
+
+.q-icon-btn {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    width: 30px; height: 30px;
+    flex: none;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .7);
+    border-radius: 9px;
+    background: var(--p-100);
+    color: #fff;
+    display: grid; place-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(255, 120, 160, .28);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.q-icon-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background: url("https://c.tenor.com/8Ec8gxS5a6EAAAAd/tenor.gif") center / cover no-repeat;
+}
+.q-icon-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(135deg, rgba(255, 120, 165, .5), rgba(255, 235, 242, .3));
+    transition: opacity .15s ease;
+}
+.q-icon-btn:hover { transform: scale(1.01); box-shadow: 0 4px 12px rgba(255, 120, 160, .4); }
+.q-icon-btn:hover::after { opacity: .6; }
+.q-icon-btn:active { transform: scale(.97); }
+.q-icon-btn svg {
+    width: 15px; height: 15px;
+    filter: drop-shadow(0 1px 2px rgba(58, 34, 48, .55));
+}
+
+.q-banner :focus-visible { outline: 2px solid var(--p-500); outline-offset: 2px; }
+
+.q-switch {
+    --w: 74px;
+    --h: 30px;
+    --k: 24px;
+    --gap: 2px;
+    --travel: calc(var(--w) - 2px - var(--k) - var(--gap) * 2);
+
+    position: relative;
+    display: inline-flex; align-items: center; flex: none;
+    cursor: pointer; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.q-switch input {
+    position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+}
+
+.q-track {
+    position: relative;
+    isolation: isolate;
+    width: var(--w); height: var(--h);
+    flex: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ffffff 0%, #ffeaf2 100%);
+    border: 1px solid var(--p-200);
+    box-shadow:
+        inset 0 2px 6px rgba(208, 65, 108, .12),
+        0 2px 10px rgba(255, 120, 160, .14);
+    overflow: hidden;
+    transition: border-color .35s ease, box-shadow .35s ease;
+}
+.q-track::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(135deg, #ff9fc0 0%, #e0527f 55%, #c93a68 100%);
+    opacity: 0;
+    transition: opacity .35s ease;
+}
+.q-track::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(circle at 70% 30%, rgba(255,143,179,.35) 0 1.5px, transparent 2px),
+        radial-gradient(circle at 84% 66%, rgba(255,143,179,.25) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 58% 70%, rgba(255,143,179,.2) 0 1px, transparent 1.5px);
+    transition: opacity .3s ease;
+    pointer-events: none;
+}
+.q-shine {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.5) 50%, transparent 70%);
+    transform: translateX(-120%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.q-state {
+    position: absolute;
+    z-index: 1;
+    top: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 7.5px;
+    font-weight: 600;
+    letter-spacing: 1.4px;
+    text-indent: 1.4px;
+    text-transform: uppercase;
+    pointer-events: none;
+    transition: opacity .25s ease, transform .35s ease;
+}
+.q-state-off {
+    left: calc(var(--k) + var(--gap) * 2);
+    right: 0;
+    color: var(--muted);
+    opacity: 1;
+}
+.q-state-on {
+    left: 0;
+    right: calc(var(--k) + var(--gap) * 2);
+    color: rgba(255, 255, 255, .95);
+    opacity: 0;
+    transform: translateX(-6px);
+    text-shadow: 0 1px 2px rgba(120, 20, 60, .35);
+}
+
+.q-knob {
+    position: absolute;
+    z-index: 2;
+    top: var(--gap); left: var(--gap);
+    width: var(--k); height: var(--k);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 30%, #fffafc 0%, #fff0f6 70%, #ffe3ed 100%);
+    box-shadow:
+        0 2px 6px rgba(58, 34, 48, .28),
+        0 0 0 1px rgba(255, 183, 207, .6);
+    transform: translateX(var(--tx, 0px)) scale(var(--sc, 1));
+    transition: transform .45s cubic-bezier(.3, 1.35, .5, 1), box-shadow .3s ease;
+}
+.q-knob::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, .7);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.q-tree-wrap {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.q-tree { display: block; width: 100%; height: 100%; }
+
+.q-leaves {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.q-leaves i {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: calc(var(--k) * .17 * var(--z, 1));
+    height: calc(var(--k) * .17 * var(--z, 1));
+    border-radius: 100% 0 100% 0;
+    background: linear-gradient(135deg, #fff4f8 0%, var(--c, #ff9fbf) 100%);
+    opacity: 0;
+    will-change: transform, opacity;
+    animation: q-leaf var(--t, 6s) ease-in-out var(--dl, 0s) infinite;
+}
+@keyframes q-leaf {
+    0% {
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(.4);
         opacity: 0;
-        border-radius: 75% 0 75% 0;
-        background: linear-gradient(135deg, #ffe4ee 0%, #ffb7cf 70%, #ff9fbf 100%);
-        animation: q-drift var(--d) linear var(--delay) infinite;
     }
-    @keyframes q-drift {
-        0%   { transform: translate3d(0, -6px, 0) rotate(-20deg); opacity: 0; }
-        12%  { opacity: var(--o, .8); }
-        50%  { transform: translate3d(calc(var(--dx) * .55), 26px, 0) rotate(100deg); }
-        85%  { opacity: var(--o, .8); }
-        100% { transform: translate3d(var(--dx), 64px, 0) rotate(200deg); opacity: 0; }
-    }
-
-    /* ---- İçerik ---- */
-    .q-container { position: relative; z-index: 1; height: 100%; padding: 0 12px; }
-    .q-content {
-        height: 100%;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-    }
-    .q-left, .q-right { display: flex; align-items: center; gap: 10px; min-width: 0; flex: none; }
-
-    .q-error-message {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 4px 12px 4px 8px;
-        border-radius: 999px;
-        background: rgba(255, 243, 247, .92);
-        color: var(--err);
-        font-size: 12.5px;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        min-width: 0;
-        flex: 0 1 auto;
-    }
-    .q-error-message::before {
-        content: "";
-        flex: none;
-        width: 16px; height: 16px;
-        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d6336c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/%3E%3Cpath d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E") center / contain no-repeat;
-    }
-    .q-error-message b { font-weight: 700; }
-    .q-short { display: none; }
-
-    .q-balance {
-        display: inline-flex; align-items: baseline; gap: 6px;
-        padding: 4px 11px;
-        border-radius: 8px;
-        background: var(--p-50);
-        border: 1px solid var(--p-100);
-        color: var(--p-700);
-        font-size: 13px; font-weight: 600;
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-    }
-    .q-balance small { font-size: 11px; font-weight: 400; color: var(--muted); }
-
-    .q-btn {
-        display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-        padding: 6px 13px;
-        border-radius: 8px;
-        background: var(--p-600);
-        color: #fff;
-        font-size: 12.5px; font-weight: 600;
-        text-decoration: none;
-        white-space: nowrap;
-        transition: background .15s ease;
-    }
-    .q-btn:hover { background: var(--p-700); }
-    .q-btn-plus { display: none; font-size: 17px; line-height: 1; font-weight: 700; }
-
-    /* ---- Kapatma tuşu ---- */
-    .q-icon-btn {
-        position: relative;
-        isolation: isolate;
-        overflow: hidden;
-        width: 30px; height: 30px;
-        flex: none;
-        padding: 0;
-        border: 1px solid rgba(255, 255, 255, .7);
-        border-radius: 9px;
-        background: var(--p-100);
-        color: #fff;
-        display: grid; place-items: center;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(255, 120, 160, .28);
-        transition: transform .15s ease, box-shadow .15s ease;
-    }
-    .q-icon-btn::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: -2;
-        background: url("https://c.tenor.com/8Ec8gxS5a6EAAAAd/tenor.gif") center / cover no-repeat;
-    }
-    .q-icon-btn::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        background: linear-gradient(135deg, rgba(255, 120, 165, .5), rgba(255, 235, 242, .3));
-        transition: opacity .15s ease;
-    }
-    .q-icon-btn:hover { transform: scale(1.01); box-shadow: 0 4px 12px rgba(255, 120, 160, .4); }
-    .q-icon-btn:hover::after { opacity: .6; }
-    .q-icon-btn:active { transform: scale(.97); }
-    .q-icon-btn svg {
-        width: 15px; height: 15px;
-        filter: drop-shadow(0 1px 2px rgba(58, 34, 48, .55));
-    }
-
-    .q-banner :focus-visible { outline: 2px solid var(--p-500); outline-offset: 2px; }
-
-    /* =========================================================
-       AÇ / KAPA ANAHTARI
-       ========================================================= */
-    .q-switch {
-        --w: 74px;
-        --h: 30px;
-        --k: 24px;
-        --gap: 2px;
-        --travel: calc(var(--w) - 2px - var(--k) - var(--gap) * 2);
-
-        position: relative;
-        display: inline-flex; align-items: center; flex: none;
-        cursor: pointer; user-select: none;
-        -webkit-tap-highlight-color: transparent;
-    }
-    .q-switch input {
-        position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
-    }
-
-    .q-track {
-        position: relative;
-        isolation: isolate;
-        width: var(--w); height: var(--h);
-        flex: none;
-        border-radius: 999px;
-        background: linear-gradient(135deg, #ffffff 0%, #ffeaf2 100%);
-        border: 1px solid var(--p-200);
-        box-shadow:
-            inset 0 2px 6px rgba(208, 65, 108, .12),
-            0 2px 10px rgba(255, 120, 160, .14);
-        overflow: hidden;
-        transition: border-color .35s ease, box-shadow .35s ease;
-    }
-    .q-track::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        background: linear-gradient(135deg, #ff9fc0 0%, #e0527f 55%, #c93a68 100%);
-        opacity: 0;
-        transition: opacity .35s ease;
-    }
-    .q-track::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        background:
-            radial-gradient(circle at 70% 30%, rgba(255,143,179,.35) 0 1.5px, transparent 2px),
-            radial-gradient(circle at 84% 66%, rgba(255,143,179,.25) 0 1px, transparent 1.5px),
-            radial-gradient(circle at 58% 70%, rgba(255,143,179,.2) 0 1px, transparent 1.5px);
-        transition: opacity .3s ease;
-        pointer-events: none;
-    }
-    .q-shine {
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.5) 50%, transparent 70%);
-        transform: translateX(-120%);
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .q-state {
-        position: absolute;
-        z-index: 1;
-        top: 0; bottom: 0;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 7.5px;
-        font-weight: 600;
-        letter-spacing: 1.4px;
-        text-indent: 1.4px;
-        text-transform: uppercase;
-        pointer-events: none;
-        transition: opacity .25s ease, transform .35s ease;
-    }
-    .q-state-off {
-        left: calc(var(--k) + var(--gap) * 2);
-        right: 0;
-        color: var(--muted);
+    10% {
+        transform: translate3d(calc(var(--k) * var(--dx) * .12), calc(var(--k) * .04), 0) rotate(calc(20deg * var(--rs))) scale(1);
         opacity: 1;
     }
-    .q-state-on {
-        left: 0;
-        right: calc(var(--k) + var(--gap) * 2);
-        color: rgba(255, 255, 255, .95);
+    28% {
+        transform: translate3d(calc(var(--k) * var(--dx) * .85), calc(var(--k) * .14), 0) rotate(calc(75deg * var(--rs))) scale(.55, 1);
+    }
+    48% {
+        transform: translate3d(calc(var(--k) * var(--dx) * .2), calc(var(--k) * .27), 0) rotate(calc(140deg * var(--rs))) scale(1);
+    }
+    68% {
+        transform: translate3d(calc(var(--k) * var(--dx) * 1), calc(var(--k) * .4), 0) rotate(calc(210deg * var(--rs))) scale(.55, 1);
+        opacity: .95;
+    }
+    100% {
+        transform: translate3d(calc(var(--k) * var(--dx) * .35), calc(var(--k) * .58), 0) rotate(calc(285deg * var(--rs))) scale(.85);
         opacity: 0;
-        transform: translateX(-6px);
-        text-shadow: 0 1px 2px rgba(120, 20, 60, .35);
     }
+}
 
-    /* Topuz */
-    .q-knob {
-        position: absolute;
-        z-index: 2;
-        top: var(--gap); left: var(--gap);
-        width: var(--k); height: var(--k);
-        border-radius: 50%;
-        background: radial-gradient(circle at 50% 30%, #fffafc 0%, #fff0f6 70%, #ffe3ed 100%);
-        box-shadow:
-            0 2px 6px rgba(58, 34, 48, .28),
-            0 0 0 1px rgba(255, 183, 207, .6);
-        transform: translateX(var(--tx, 0px)) scale(var(--sc, 1));
-        transition: transform .45s cubic-bezier(.3, 1.35, .5, 1), box-shadow .3s ease;
-    }
-    .q-knob::before {
-        content: "";
-        position: absolute;
-        inset: -2px;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, .7);
-        opacity: 0;
-        pointer-events: none;
-    }
+.q-switch:hover .q-knob {
+    box-shadow:
+        0 3px 10px rgba(58, 34, 48, .32),
+        0 0 0 1px rgba(255, 143, 179, .9);
+}
+.q-switch:active .q-knob { --sc: .92; }
 
-    /* ---- Ağaç (statik SVG, bir kez çizilir) ---- */
-    .q-tree-wrap {
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        overflow: hidden;
-    }
-    .q-tree { display: block; width: 100%; height: 100%; }
+.q-switch input:checked + .q-track {
+    border-color: transparent;
+    box-shadow:
+        inset 0 2px 7px rgba(120, 20, 60, .3),
+        0 3px 16px rgba(255, 100, 150, .55);
+}
+.q-switch input:checked + .q-track::before { opacity: 1; }
+.q-switch input:checked + .q-track::after { opacity: 0; }
+.q-switch input:checked + .q-track .q-shine { opacity: 1; animation: q-shine 3.2s ease-in-out infinite; }
+.q-switch input:checked + .q-track .q-knob { --tx: var(--travel); }
+.q-switch input:checked + .q-track .q-knob::before { animation: q-pulse 2.2s ease-out infinite; }
+.q-switch input:checked + .q-track .q-state-off { opacity: 0; transform: translateX(6px); }
+.q-switch input:checked + .q-track .q-state-on  { opacity: 1; transform: translateX(0); }
 
-    /* ---- Dökülen yapraklar: topuzdan taşıp anahtarın üstüne süzülür ---- */
-    .q-leaves {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-    }
-    .q-leaves i {
-        position: absolute;
-        left: var(--x);
-        top: var(--y);
-        width: calc(var(--k) * .17 * var(--z, 1));
-        height: calc(var(--k) * .17 * var(--z, 1));
-        border-radius: 100% 0 100% 0;
-        background: linear-gradient(135deg, #fff4f8 0%, var(--c, #ff9fbf) 100%);
-        opacity: 0;
-        will-change: transform, opacity;
-        animation: q-leaf var(--t, 6s) ease-in-out var(--dl, 0s) infinite;
-    }
-    @keyframes q-leaf {
-        0% {
-            transform: translate3d(0, 0, 0) rotate(0deg) scale(.4);
-            opacity: 0;
-        }
-        10% {
-            transform: translate3d(calc(var(--k) * var(--dx) * .12), calc(var(--k) * .04), 0) rotate(calc(20deg * var(--rs))) scale(1);
-            opacity: 1;
-        }
-        28% {
-            transform: translate3d(calc(var(--k) * var(--dx) * .85), calc(var(--k) * .14), 0) rotate(calc(75deg * var(--rs))) scale(.55, 1);
-        }
-        48% {
-            transform: translate3d(calc(var(--k) * var(--dx) * .2), calc(var(--k) * .27), 0) rotate(calc(140deg * var(--rs))) scale(1);
-        }
-        68% {
-            transform: translate3d(calc(var(--k) * var(--dx) * 1), calc(var(--k) * .4), 0) rotate(calc(210deg * var(--rs))) scale(.55, 1);
-            opacity: .95;
-        }
-        100% {
-            transform: translate3d(calc(var(--k) * var(--dx) * .35), calc(var(--k) * .58), 0) rotate(calc(285deg * var(--rs))) scale(.85);
-            opacity: 0;
-        }
-    }
+.q-switch input:focus-visible + .q-track { outline: 2px solid var(--p-500); outline-offset: 2px; }
 
-    .q-switch:hover .q-knob {
-        box-shadow:
-            0 3px 10px rgba(58, 34, 48, .32),
-            0 0 0 1px rgba(255, 143, 179, .9);
-    }
-    .q-switch:active .q-knob { --sc: .92; }
+@keyframes q-shine {
+    0%   { transform: translateX(-120%); }
+    60%, 100% { transform: translateX(120%); }
+}
+@keyframes q-pulse {
+    0%   { transform: scale(1);   opacity: .8; }
+    100% { transform: scale(1.7); opacity: 0; }
+}
 
-    /* ---- AÇIK durumu ---- */
-    .q-switch input:checked + .q-track {
-        border-color: transparent;
-        box-shadow:
-            inset 0 2px 7px rgba(120, 20, 60, .3),
-            0 3px 16px rgba(255, 100, 150, .55);
-    }
-    .q-switch input:checked + .q-track::before { opacity: 1; }
-    .q-switch input:checked + .q-track::after { opacity: 0; }
-    .q-switch input:checked + .q-track .q-shine { opacity: 1; animation: q-shine 3.2s ease-in-out infinite; }
-    .q-switch input:checked + .q-track .q-knob { --tx: var(--travel); }
-    .q-switch input:checked + .q-track .q-knob::before { animation: q-pulse 2.2s ease-out infinite; }
-    .q-switch input:checked + .q-track .q-state-off { opacity: 0; transform: translateX(6px); }
-    .q-switch input:checked + .q-track .q-state-on  { opacity: 1; transform: translateX(0); }
+@media (prefers-reduced-motion: reduce) {
+    .q-petals, .q-leaves { display: none; }
+    .q-shine, .q-knob::before { animation: none !important; }
+}
 
-    .q-switch input:focus-visible + .q-track { outline: 2px solid var(--p-500); outline-offset: 2px; }
+@media (max-width: 620px) {
+    .q-banner { height: 52px; border-radius: 12px; }
+    .q-container { padding: 0 8px; }
+    .q-content { gap: 6px; }
+    .q-left, .q-right { gap: 6px; }
 
-    @keyframes q-shine {
-        0%   { transform: translateX(-120%); }
-        60%, 100% { transform: translateX(120%); }
-    }
-    @keyframes q-pulse {
-        0%   { transform: scale(1);   opacity: .8; }
-        100% { transform: scale(1.7); opacity: 0; }
-    }
+    .q-switch { --w: 64px; --h: 28px; --k: 22px; }
+    .q-state { font-size: 7px; letter-spacing: 1.1px; text-indent: 1.1px; }
 
-    @media (prefers-reduced-motion: reduce) {
-        .q-petals, .q-leaves { display: none; }
-        .q-shine, .q-knob::before { animation: none !important; }
-    }
+    .q-error-message { font-size: 11.5px; padding: 3px 9px 3px 6px; gap: 5px; }
+    .q-error-message::before { width: 14px; height: 14px; }
+    .q-balance { padding: 3px 8px; font-size: 12px; }
+    .q-balance small { display: none; }
+    .q-btn { padding: 6px 10px; font-size: 12px; }
+    .q-icon-btn { width: 28px; height: 28px; border-radius: 8px; }
+}
+@media (max-width: 480px) {
+    .q-switch { --w: 48px; --h: 26px; --k: 20px; }
+    .q-state { display: none; }
 
-    /* =========================================================
-       MOBİL
-       ========================================================= */
-    @media (max-width: 620px) {
-        .q-banner { height: 52px; border-radius: 12px; }
-        .q-container { padding: 0 8px; }
-        .q-content { gap: 6px; }
-        .q-left, .q-right { gap: 6px; }
+    .q-error-message::before { display: none; }
+    .q-error-message { padding: 3px 8px; }
+    .q-long { display: none; }
+    .q-short { display: inline; }
 
-        .q-switch { --w: 64px; --h: 28px; --k: 22px; }
-        .q-state { font-size: 7px; letter-spacing: 1.1px; text-indent: 1.1px; }
+    .q-btn-text { display: none; }
+    .q-btn-plus { display: inline; }
+    .q-btn { width: 28px; height: 28px; padding: 0; border-radius: 8px; }
 
-        .q-error-message { font-size: 11.5px; padding: 3px 9px 3px 6px; gap: 5px; }
-        .q-error-message::before { width: 14px; height: 14px; }
-        .q-balance { padding: 3px 8px; font-size: 12px; }
-        .q-balance small { display: none; }
-        .q-btn { padding: 6px 10px; font-size: 12px; }
-        .q-icon-btn { width: 28px; height: 28px; border-radius: 8px; }
-    }
-    @media (max-width: 480px) {
-        .q-switch { --w: 48px; --h: 26px; --k: 20px; }
-        .q-state { display: none; }
-
-        .q-error-message::before { display: none; }
-        .q-error-message { padding: 3px 8px; }
-        .q-long { display: none; }
-        .q-short { display: inline; }
-
-        .q-btn-text { display: none; }
-        .q-btn-plus { display: inline; }
-        .q-btn { width: 28px; height: 28px; padding: 0; border-radius: 8px; }
-
-        .q-petals i:nth-child(even) { display: none; }
-        .q-leaves i:nth-child(n+6) { display: none; }
-    }
-    @media (max-width: 360px) {
-        .q-error-message { display: none; }
-        .q-content { justify-content: space-between; }
-    }
-    `
+    .q-petals i:nth-child(even) { display: none; }
+    .q-leaves i:nth-child(n+6) { display: none; }
+}
+@media (max-width: 360px) {
+    .q-error-message { display: none; }
+    .q-content { justify-content: space-between; }
+}
+`
         let header = document.createElement('div');
         header.id = "q-banner";
         header.className = "q-banner";
         header.role = "status";
         header.innerHTML = `
 
-    <div class="q-petals" aria-hidden="true">
-        <i style="--l:3%;  --s:8px;  --d:14s; --delay:0s;    --dx:-30px; --o:.8"></i>
-        <i style="--l:11%; --s:6px;  --d:17s; --delay:-8s;   --dx:26px;  --o:.6"></i>
-        <i style="--l:19%; --s:10px; --d:15s; --delay:-4s;   --dx:-28px; --o:.85"></i>
-        <i style="--l:28%; --s:7px;  --d:18s; --delay:-12s;  --dx:32px;  --o:.65"></i>
-        <i style="--l:37%; --s:9px;  --d:13s; --delay:-6s;   --dx:-24px; --o:.8"></i>
-        <i style="--l:46%; --s:6px;  --d:16s; --delay:-10s;  --dx:30px;  --o:.65"></i>
-        <i style="--l:55%; --s:10px; --d:14s; --delay:-2s;   --dx:-34px; --o:.85"></i>
-        <i style="--l:64%; --s:7px;  --d:17s; --delay:-14s;  --dx:28px;  --o:.65"></i>
-        <i style="--l:73%; --s:9px;  --d:13s; --delay:-7s;   --dx:-26px; --o:.8"></i>
-        <i style="--l:82%; --s:6px;  --d:16s; --delay:-1s;   --dx:24px;  --o:.65"></i>
-        <i style="--l:90%; --s:10px; --d:15s; --delay:-9s;   --dx:-30px; --o:.8"></i>
-        <i style="--l:97%; --s:7px;  --d:18s; --delay:-5s;   --dx:-22px; --o:.65"></i>
-    </div>
+<div class="q-petals" aria-hidden="true">
+    <i style="--l:3%;  --s:8px;  --d:14s; --delay:0s;    --dx:-30px; --o:.8"></i>
+    <i style="--l:11%; --s:6px;  --d:17s; --delay:-8s;   --dx:26px;  --o:.6"></i>
+    <i style="--l:19%; --s:10px; --d:15s; --delay:-4s;   --dx:-28px; --o:.85"></i>
+    <i style="--l:28%; --s:7px;  --d:18s; --delay:-12s;  --dx:32px;  --o:.65"></i>
+    <i style="--l:37%; --s:9px;  --d:13s; --delay:-6s;   --dx:-24px; --o:.8"></i>
+    <i style="--l:46%; --s:6px;  --d:16s; --delay:-10s;  --dx:30px;  --o:.65"></i>
+    <i style="--l:55%; --s:10px; --d:14s; --delay:-2s;   --dx:-34px; --o:.85"></i>
+    <i style="--l:64%; --s:7px;  --d:17s; --delay:-14s;  --dx:28px;  --o:.65"></i>
+    <i style="--l:73%; --s:9px;  --d:13s; --delay:-7s;   --dx:-26px; --o:.8"></i>
+    <i style="--l:82%; --s:6px;  --d:16s; --delay:-1s;   --dx:24px;  --o:.65"></i>
+    <i style="--l:90%; --s:10px; --d:15s; --delay:-9s;   --dx:-30px; --o:.8"></i>
+    <i style="--l:97%; --s:7px;  --d:18s; --delay:-5s;   --dx:-22px; --o:.65"></i>
+</div>
 
-    <div class="q-container">
-        <div class="q-content">
+<div class="q-container">
+    <div class="q-content">
 
-            <div class="q-left">
-                <label class="q-switch" title="Özelliği aç/kapat">
-                    <input type="checkbox" id="q-toggle" role="switch" aria-label="Özelliği aç/kapat">
-                    <span class="q-track">
-                        <span class="q-shine"></span>
-                        <span class="q-state q-state-on">Açık</span>
-                        <span class="q-state q-state-off">Kapalı</span>
-                        <span class="q-knob">
+        <div class="q-left">
+            <label class="q-switch" title="Özelliği aç/kapat">
+                <input type="checkbox" id="q-toggle" role="switch" aria-label="Özelliği aç/kapat">
+                <span class="q-track">
+                    <span class="q-shine"></span>
+                    <span class="q-state q-state-on">Açık</span>
+                    <span class="q-state q-state-off">Kapalı</span>
+                    <span class="q-knob">
 
-                            <span class="q-tree-wrap">
-                                <svg class="q-tree" viewBox="0 0 48 48" aria-hidden="true">
-                                    <!-- Zemin -->
-                                    <ellipse cx="24" cy="44.6" rx="14" ry="3" fill="#e2bfae"/>
-                                    <ellipse cx="24" cy="43.8" rx="10" ry="1.8" fill="#c99a82"/>
+                        <span class="q-tree-wrap">
+                            <svg class="q-tree" viewBox="0 0 48 48" aria-hidden="true">
+                                <ellipse cx="24" cy="44.6" rx="14" ry="3" fill="#e2bfae"/>
+                                <ellipse cx="24" cy="43.8" rx="10" ry="1.8" fill="#c99a82"/>
 
-                                    <!-- Gövde: kökten başlayıp S çizerek incelen dolgu -->
-                                    <path fill="#5b3a2e" d="M16.5 44.2 C20.6 43 21.6 40.2 21.2 37 C20.8 33.6 16.4 31.8 17.2 28 C17.7 25.6 19.6 24.4 21.4 23.8 L23.4 25.4 C22 26.4 21.2 27.4 21.6 29 C22.4 32 26.6 33.4 26.6 37.2 C26.6 40.4 28 43 32.6 44.2 C27 45 21.6 45 16.5 44.2Z"/>
-                                    <!-- Gövde ışığı ve kabuk çizgileri -->
-                                    <path d="M19.4 41.6 C21 40 21 37.6 20.4 35.4" fill="none" stroke="#8f6350" stroke-width=".9" stroke-linecap="round" opacity=".8"/>
-                                    <path d="M23.2 38.2 C23.8 40 24.6 41.4 26 42.4" fill="none" stroke="#3d241b" stroke-width=".6" stroke-linecap="round" opacity=".55"/>
-                                    <path d="M20.2 30.6 C19.4 29.6 19.2 28.6 19.6 27.6" fill="none" stroke="#8f6350" stroke-width=".6" stroke-linecap="round" opacity=".7"/>
+                                <path fill="#5b3a2e" d="M16.5 44.2 C20.6 43 21.6 40.2 21.2 37 C20.8 33.6 16.4 31.8 17.2 28 C17.7 25.6 19.6 24.4 21.4 23.8 L23.4 25.4 C22 26.4 21.2 27.4 21.6 29 C22.4 32 26.6 33.4 26.6 37.2 C26.6 40.4 28 43 32.6 44.2 C27 45 21.6 45 16.5 44.2Z"/>
+                                <path d="M19.4 41.6 C21 40 21 37.6 20.4 35.4" fill="none" stroke="#8f6350" stroke-width=".9" stroke-linecap="round" opacity=".8"/>
+                                <path d="M23.2 38.2 C23.8 40 24.6 41.4 26 42.4" fill="none" stroke="#3d241b" stroke-width=".6" stroke-linecap="round" opacity=".55"/>
+                                <path d="M20.2 30.6 C19.4 29.6 19.2 28.6 19.6 27.6" fill="none" stroke="#8f6350" stroke-width=".6" stroke-linecap="round" opacity=".7"/>
 
-                                    <!-- Dallar -->
-                                    <g fill="none" stroke="#5b3a2e" stroke-linecap="round" stroke-linejoin="round">
-                                        <path stroke-width="2.5" d="M21.6 25 C21 21.6 22.6 19.2 24.4 16.4"/>
-                                        <path stroke-width="1.8" d="M25.4 35.6 C28.4 33 31.4 31.8 34.6 30"/>
-                                        <path stroke-width="1.5" d="M18 28.6 C15.4 27.4 13 26 11.4 23.6"/>
-                                        <path stroke-width="1"   d="M22 21 C20.4 19.4 18.2 18.6 16 18.6"/>
-                                        <path stroke-width="1"   d="M30.6 31.4 C31.6 33 33.6 33.8 35.6 33.6"/>
-                                    </g>
+                                <g fill="none" stroke="#5b3a2e" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke-width="2.5" d="M21.6 25 C21 21.6 22.6 19.2 24.4 16.4"/>
+                                    <path stroke-width="1.8" d="M25.4 35.6 C28.4 33 31.4 31.8 34.6 30"/>
+                                    <path stroke-width="1.5" d="M18 28.6 C15.4 27.4 13 26 11.4 23.6"/>
+                                    <path stroke-width="1"   d="M22 21 C20.4 19.4 18.2 18.6 16 18.6"/>
+                                    <path stroke-width="1"   d="M30.6 31.4 C31.6 33 33.6 33.8 35.6 33.6"/>
+                                </g>
 
-                                    <!-- Taçlar: arka, yan, ön -->
-                                    ${qCanopy(10.6, 22.2, 6.6, 3.9, 17, 8)}
-                                    ${qCanopy(36, 27, 7.8, 4.6, 29, 9)}
-                                    ${qCanopy(23.6, 12.6, 12.4, 7.6, 41, 12)}
-                                </svg>
-                            </span>
-
-                            <!-- Dökülen yapraklar -->
-                            <span class="q-leaves" aria-hidden="true">
-                                <i style="--x:34%; --y:40%; --t:6.2s; --dl:-0.6s; --dx:.55;  --rs:1;  --z:1.1"></i>
-                                <i style="--x:62%; --y:36%; --t:7s;   --dl:-2.8s; --dx:-.6;  --rs:-1; --z:1;   --c:#ffb8d0"></i>
-                                <i style="--x:20%; --y:46%; --t:5.6s; --dl:-4.2s; --dx:.5;   --rs:1;  --z:.9;  --c:#f58bb0"></i>
-                                <i style="--x:76%; --y:52%; --t:6.6s; --dl:-1.4s; --dx:-.5;  --rs:-1; --z:1.05"></i>
-                                <i style="--x:48%; --y:34%; --t:7.4s; --dl:-5.4s; --dx:.6;   --rs:1;  --z:.85; --c:#ffc6d9"></i>
-                                <i style="--x:14%; --y:34%; --t:6s;   --dl:-3.4s; --dx:-.55; --rs:-1; --z:.95; --c:#f58bb0"></i>
-                                <i style="--x:86%; --y:44%; --t:5.8s; --dl:-0.2s; --dx:.45;  --rs:1;  --z:.9"></i>
-                            </span>
-
+                                ${qCanopy(10.6, 22.2, 6.6, 3.9, 17, 8)}
+                                ${qCanopy(36, 27, 7.8, 4.6, 29, 9)}
+                                ${qCanopy(23.6, 12.6, 12.4, 7.6, 41, 12)}
+                            </svg>
                         </span>
+
+                        <span class="q-leaves" aria-hidden="true">
+                            <i style="--x:34%; --y:40%; --t:6.2s; --dl:-0.6s; --dx:.55;  --rs:1;  --z:1.1"></i>
+                            <i style="--x:62%; --y:36%; --t:7s;   --dl:-2.8s; --dx:-.6;  --rs:-1; --z:1;   --c:#ffb8d0"></i>
+                            <i style="--x:20%; --y:46%; --t:5.6s; --dl:-4.2s; --dx:.5;   --rs:1;  --z:.9;  --c:#f58bb0"></i>
+                            <i style="--x:76%; --y:52%; --t:6.6s; --dl:-1.4s; --dx:-.5;  --rs:-1; --z:1.05"></i>
+                            <i style="--x:48%; --y:34%; --t:7.4s; --dl:-5.4s; --dx:.6;   --rs:1;  --z:.85; --c:#ffc6d9"></i>
+                            <i style="--x:14%; --y:34%; --t:6s;   --dl:-3.4s; --dx:-.55; --rs:-1; --z:.95; --c:#f58bb0"></i>
+                            <i style="--x:86%; --y:44%; --t:5.8s; --dl:-0.2s; --dx:.45;  --rs:1;  --z:.9"></i>
+                        </span>
+
                     </span>
-                </label>
-            </div>
-
-            <span class="q-error-message"><b>${qCount}</b><span class="q-long">&nbsp;hesap açılabilir</span><span class="q-short">&nbsp;hesap</span></span>
-
-            <div class="q-right">
-                <span class="q-balance"><small>Bakiye</small>${qBalance}</span>
-
-                <a class="q-btn"
-                   href="https://grizzlysms.com/tr/profile/pay"
-                   target="_blank" rel="noopener noreferrer"
-                   aria-label="Bakiye yükle">
-                    <span class="q-btn-text">Bakiye yükle</span>
-                    <span class="q-btn-plus" aria-hidden="true">+</span>
-                </a>
-
-                <button class="q-icon-btn" id="q-close" type="button" aria-label="Bandı kapat">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-                </button>
-            </div>
-
+                </span>
+            </label>
         </div>
+
+        <span class="q-error-message"><b>${qCount}</b><span class="q-long">&nbsp;hesap açılabilir</span><span class="q-short">&nbsp;hesap</span></span>
+
+        <div class="q-right">
+            <span class="q-balance"><small>Bakiye</small>${qBalance}</span>
+
+            <a class="q-btn"
+               href="https://grizzlysms.com/tr/profile/pay"
+               target="_blank" rel="noopener noreferrer"
+               aria-label="Bakiye yükle">
+                <span class="q-btn-text">Bakiye yükle</span>
+                <span class="q-btn-plus" aria-hidden="true">+</span>
+            </a>
+
+            <button class="q-icon-btn" id="q-close" type="button" aria-label="Bandı kapat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+        </div>
+
     </div>
+</div>
+`;
 
-    `
-
-        /* ---- Aç/kapa anahtarı mantığı ---- */
         const qToggle = header.querySelector('#q-toggle');
-
         const isFeatureActive = GM_getValue("qFeature") === "true";
 
         qToggle.checked = isFeatureActive;
@@ -1581,17 +1576,34 @@
             }));
         });
 
-        /* Sekme görünmezken animasyonları durdur */
         document.addEventListener('visibilitychange', () => {
             header.classList.toggle('q-paused', document.hidden);
         });
 
         document.head.append(bannerCss);
-        let bannerContainer = await waitForElement(() => document.querySelector(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.xeuugli.xq4xaog.x1lnukts.x106a9eq.x1xnnf8n.xqui205.x1xkqpvf.xvc5jky.x11t971q"))
-        bannerContainer.prepend(header);
-        document.getElementById('q-close').addEventListener('click', function () {
-            document.getElementById('q-banner').hidden = true;
-        });
+
+        // Sayfa durumuna göre 500ms gecikme ile enjekte et
+        if (document.readyState === 'complete') {
+            setTimeout(injectBanner, 500);
+        } else {
+            window.addEventListener('load', () => {
+                setTimeout(injectBanner, 500);
+            });
+        }
+
+        async function injectBanner() {
+            if (document.getElementById('q-banner')) return;
+
+            let bannerContainer = await waitForElement(() =>
+                document.querySelector(".x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.xeuugli.xq4xaog.x1lnukts.x106a9eq.x1xnnf8n.xqui205.x1xkqpvf.xvc5jky.x11t971q") || document.body
+            );
+
+            bannerContainer.prepend(header);
+
+            document.getElementById('q-close').addEventListener('click', function () {
+                document.getElementById('q-banner').hidden = true;
+            });
+        }
     }
 
 // Kilit Mekanizması: Sunucuda hesap varsa bitmesini bekler, yoksa devam eder

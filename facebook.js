@@ -1004,7 +1004,7 @@
 
     // --- AKIŞ ---
 
-    const firstnameInput = document.querySelector("input[name='firstname']") || document.querySelector("input[type='text']");
+    const firstnameInput = await waitForElement(() => document.querySelector("input[name='firstname']") || document.querySelector("input[type='text']")); 
     const regLastInput = document.querySelector("input[name='reg_email__']") || document.querySelectorAll("input[type='text']")[1];
     const numberInput = document.querySelector("#_R_6ad8p4jikacppb6amH1_");
     const passwordInput = document.querySelector("input#_R_clap4jikacppb6amH1_");
@@ -1658,7 +1658,7 @@
         await checkAndProcessNextStep();
     }
 
-    if (firstnameInput && path.includes('/reg/')) await waitForElement(() =>  typeChar(firstnameInput, nameData[Math.floor(Math.random() * nameData.length)]) );
+    if (firstnameInput && path.includes('/reg/')) await typeChar(firstnameInput, nameData[Math.floor(Math.random() * nameData.length)]);
     if (regLastInput && path.includes('/reg/')) await typeChar(regLastInput, lastNameData[Math.floor(Math.random() * lastNameData.length)]);
     if (passwordInput && path.includes('/reg/')) {
         let currentPassword = GM_getValue('grizzyPassword');
@@ -1701,7 +1701,7 @@
         }, 100);
     }
 
-    const codeInput = Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim().includes("kodu")).closest('div').querySelector('input');
+    const codeInput = await waitForElement(() => Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim().includes("kodu")).closest('div').querySelector('input') ); 
     const nextButton = Array.from(document.querySelectorAll('div[role="button"]')).find(el => el.textContent.trim() === "Devam");
 
     // Ana Doğrulama Mantığı

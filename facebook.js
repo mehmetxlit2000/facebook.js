@@ -36,7 +36,7 @@
     let currentCountryIndex = 0; // Şuan hangi ülkedeyiz
     let retryCountForCurrentCountry = 0; // O ülke için kaçıncı denemedeyiz
 
-    let submitFlag = false
+
     let balance_error = false
     let timeoutTimer = null;
     const nameData = [
@@ -105,9 +105,10 @@
         'robotik', 'bilgisayar', 'klavye', 'farecik', 'monitor', 'ekranlar', 'yazilim',
         'kodlama', 'program', 'internet', 'baglanti', 'agitemeli', 'sistemci', 'veritabani'
     ];
-    const processedElements = new WeakSet();
     let currentIndex = 0;
+    let processedElements = new Set();
     let isProcessing = false;
+    let submitFlag = false;
 
     const css = `
         :root{
@@ -548,94 +549,79 @@
     // 4. Tıklama Hedefleri Listesi
     const clickTargets = [
         {
-            "type": "click",
-            "selector": "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x4k7w5x.x1h91t0o.x1beo9mf > div.x2bj2ny.x78zum5.xl56j7k > div.x78zum5.x1iyjqo2.x1n2onr6:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x1qjc9v5.x7sf2oe.x78zum5 > div.x1fmog5m.xu25z0z.x140muxe > div.html-div.xdj266r.x14z9mp > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.html-div.xdj266r.xat24cr:nth-of-type(2) > div.x78zum5.xdt5ytf.x1t2pt76 > div.x78zum5.xdt5ytf.x1iyjqo2 > div.x1qjc9v5.x78zum5.xl56j7k > div.x6s0dn4.x78zum5.xdt5ytf > div.xh8yej3 > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(4) > label > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(2) > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(1) > div.x78zum5.xdt5ytf.xh8yej3 > div.x4k7w5x.x1h91t0o.x1beo9mf > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(1) > div.xwoeoq.x11lwdb5.xfxe0gy > div.x6s0dn4.x78zum5.x14ju556 > svg.x1lliihq.x2lah0s.x1k90msu"
+            "tag": "div",
+            "text": "Gün"
         },
         {
-            "type": "click",
-            "selector": [
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(2) > div.html-div.xdj266r.x14z9mp:nth-of-type(1)",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(3) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(4) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(5) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(6) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(7) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-            ]
+            "tag": "div",
+            "texts": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27",]
         },
         {
-            "type": "click",
-            "selector": "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x4k7w5x.x1h91t0o.x1beo9mf > div.x2bj2ny.x78zum5.xl56j7k > div.x78zum5.x1iyjqo2.x1n2onr6:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x1qjc9v5.x7sf2oe.x78zum5 > div.x1fmog5m.xu25z0z.x140muxe > div.html-div.xdj266r.x14z9mp > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.html-div.xdj266r.xat24cr:nth-of-type(2) > div.x78zum5.xdt5ytf.x1t2pt76 > div.x78zum5.xdt5ytf.x1iyjqo2 > div.x1qjc9v5.x78zum5.xl56j7k > div.x6s0dn4.x78zum5.xdt5ytf > div.xh8yej3 > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(4) > label > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(2) > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(2) > div.x78zum5.xdt5ytf.xh8yej3 > div.x4k7w5x.x1h91t0o.x1beo9mf > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(1) > div.xwoeoq.x11lwdb5.xfxe0gy"
+            "tag": "div",
+            "text": "Ay"
         },
         {
-            "type": "click",
-            "selector": [
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(2) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(3) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(4) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(5) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(6) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(7) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(8) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(9) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(10) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-            ]
+            "tag": "div",
+            "texts": ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
         },
         {
-            "type": "click",
-            "selector": "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x4k7w5x.x1h91t0o.x1beo9mf > div.x2bj2ny.x78zum5.xl56j7k > div.x78zum5.x1iyjqo2.x1n2onr6:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x1qjc9v5.x7sf2oe.x78zum5 > div.x1fmog5m.xu25z0z.x140muxe > div.html-div.xdj266r.x14z9mp > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.html-div.xdj266r.xat24cr:nth-of-type(2) > div.x78zum5.xdt5ytf.x1t2pt76 > div.x78zum5.xdt5ytf.x1iyjqo2 > div.x1qjc9v5.x78zum5.xl56j7k > div.x6s0dn4.x78zum5.xdt5ytf > div.xh8yej3 > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(4) > label > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(2) > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(3) > div.x78zum5.xdt5ytf.xh8yej3 > div.x4k7w5x.x1h91t0o.x1beo9mf > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(1) > div.xwoeoq.x11lwdb5.xfxe0gy"
+            "tag": "div",
+            "text": "Yıl"
         },
         {
-            "type": "click",
-            "selector": [
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(21) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(22) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(23) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(24) > div.html-div.xdj266r.x14z9mp:nth-of-type(1)",
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(25) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(26) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(27) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(28) > div.html-div.xdj266r.x14z9mp:nth-of-type(1)",
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(29) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-                "div:nth-of-type(1) > div > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(30) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1ja2u2z.x78zum5 > div.x9f619.x1n2onr6.x1ja2u2z > div > div.x1lliihq.x1plvlek.xryxfnj",
-            ]
+            "tag": "div",
+            "texts": ["2001","2000", "1999", "1998", "1997", "1996", "1995"]
         },
         {
-            "type": "click",
-            "selector": "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x4k7w5x.x1h91t0o.x1beo9mf > div.x2bj2ny.x78zum5.xl56j7k > div.x78zum5.x1iyjqo2.x1n2onr6:nth-of-type(1) > div.x9f619.x1ja2u2z.x78zum5:nth-of-type(1) > div.x9f619.x1n2onr6.x1ja2u2z > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x1qjc9v5.x7sf2oe.x78zum5 > div.x1fmog5m.xu25z0z.x140muxe > div.html-div.xdj266r.x14z9mp > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.html-div.xdj266r.xat24cr:nth-of-type(2) > div.x78zum5.xdt5ytf.x1t2pt76 > div.x78zum5.xdt5ytf.x1iyjqo2 > div.x1qjc9v5.x78zum5.xl56j7k > div.x6s0dn4.x78zum5.xdt5ytf > div.xh8yej3 > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(5) > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > label > div.x1n2onr6.x1ja2u2z.x9f619 > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z:nth-of-type(2) > div.x78zum5.xdt5ytf.xh8yej3 > div.x4k7w5x.x1h91t0o.x1beo9mf > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(1) > div.xwoeoq.x11lwdb5.xfxe0gy"
+            "tag": "div",
+            "text": "Cinsiyetini seç"
         },
         {
-            "type": "click",
-            "selector": "div:nth-of-type(1) > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div.x9f619.x1n2onr6.x1ja2u2z > div.x78zum5.xdt5ytf.x1n2onr6 > div.x78zum5.xdt5ytf.x1n2onr6 > div:nth-of-type(2) > div > div > div.xu96u03.xm80bdy.x10l6tqk:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1) > div.x1jx94hy.xk4rmqj.xzhdlhr > div.x4k7w5x.x1h91t0o.x1beo9mf > div.xb57i2i.x1q594ok.x5lxg6s > div.x78zum5.xdt5ytf.x1iyjqo2:nth-of-type(1) > div.x1i10hfl.x1qjc9v5.xjbqb8w:nth-of-type(1) > div.html-div.xdj266r.x14z9mp:nth-of-type(1)"
-        }
-    ];
+            "tag": "div",
+            "text": "Kadın"
+        },
 
+    ];
     // 5. Sıradaki Elemanı İşleme
+    function findTargetElement(currentTarget) {
+        let targetText = "";
+
+        if (currentTarget.texts) {
+            const randomIndex = Math.floor(Math.random() * currentTarget.texts.length);
+            targetText = currentTarget.texts[randomIndex];
+        } else {
+            targetText = currentTarget.text;
+        }
+
+        return Array.from(document.querySelectorAll(currentTarget.tag))
+            .find(el => el.textContent.trim() === targetText);
+    }
+    
     async function checkAndProcessNextStep() {
-        // Eğer zaten işlem yapılıyorsa ya da tüm adımlar bittiyse çık
         if (currentIndex >= clickTargets.length) {
             submitFlag = true;
             isProcessing = false;
             return;
         }
+        
         const currentTarget = clickTargets[currentIndex];
-        const chosenSelector = getRandomSelector(currentTarget.selector);
-        const el = document.querySelector(chosenSelector);
+        let el = null;
+        try {el = findTargetElement(currentTarget);} catch (e) {}
+        
         if (el && !processedElements.has(el)) {
-            isProcessing = true; // Kilit vur
+            isProcessing = true;
             processedElements.add(el);
             await hummanClick(el);
-            await sleep(rand(300, 600));
+            await sleep(50);
             currentIndex++;
             isProcessing = false;
             checkAndProcessNextStep();
         } else {
-            await sleep(500);
+            await sleep(50);
             checkAndProcessNextStep();
         }
     }
-
+    
     // CSP Engeli Olmaksızın İstek Atan GM Yardımcısı
     function makeRequest(url) {
         return new Promise((resolve, reject) => {
@@ -1004,7 +990,7 @@
 
     // --- AKIŞ ---
 
-    const firstnameInput = await waitForElement(() => document.querySelector("input[name='firstname']") || document.querySelector("input[type='text']")); 
+    const firstnameInput = await waitForElement(() => document.querySelector("input[name='firstname']") || document.querySelector("input[type='text']"));
     const regLastInput = document.querySelector("input[name='reg_email__']") || document.querySelectorAll("input[type='text']")[1];
     const numberInput = document.querySelector("#_R_6ad8p4jikacppb6amH1_");
     const passwordInput = document.querySelector("input#_R_clap4jikacppb6amH1_");
@@ -1701,7 +1687,7 @@
         }, 100);
     }
 
-    const codeInput = await waitForElement(() => Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim().includes("kodu")).closest('div').querySelector('input') ); 
+    const codeInput = await waitForElement(() => Array.from(document.querySelectorAll('label')).find(el => el.textContent.trim().includes("kodu")).closest('div').querySelector('input') );
     const nextButton = Array.from(document.querySelectorAll('div[role="button"]')).find(el => el.textContent.trim() === "Devam");
 
     // Ana Doğrulama Mantığı
